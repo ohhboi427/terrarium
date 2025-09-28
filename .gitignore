@@ -1,0 +1,10 @@
+# Binaries
+build/
+cache/
+
+# Visual Studio (Code)
+.vs/
+.vscode/
+
+# CLion
+.idea/
