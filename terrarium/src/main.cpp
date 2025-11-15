@@ -2,7 +2,7 @@
 
 using namespace terra::core;
 
-auto main() -> int {
+auto main() -> i32 {
     App app{};
     app.run();
 }
