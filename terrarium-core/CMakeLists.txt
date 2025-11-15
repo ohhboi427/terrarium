@@ -41,23 +41,52 @@ file(GLOB_RECURSE TERRARIUM_CORE_SOURCES CONFIGURE_DEPENDS
     "${TERRARIUM_CORE_INCLUDE_DIR}/*.hpp"
 )
 
-add_library(terrarium-core ${TERRARIUM_CORE_SOURCES})
+if(TERRARIUM_BUILD_SHARED)
+    add_library(terrarium-core-shared SHARED)
+    add_library(Terrarium::Core ALIAS terrarium-core-shared)
 
-target_include_directories(terrarium-core
+    target_compile_definitions(terrarium-core-shared
+        PUBLIC
+        TERRA_BUILD_SHARED
+        PRIVATE
+        TERRA_EXPORT
+    )
+
+    set(TERRARIUM_CORE_TARGET terrarium-core-shared)
+endif()
+
+if(TERRARIUM_BUILD_STATIC)
+    add_library(terrarium-core-static STATIC)
+    add_library(Terrarium::Core ALIAS terrarium-core-static)
+
+    set(TERRARIUM_CORE_TARGET terrarium-core-static)
+endif()
+
+target_sources(${TERRARIUM_CORE_TARGET}
+    PRIVATE
+    ${TERRARIUM_CORE_SOURCES}
+)
+
+target_include_directories(${TERRARIUM_CORE_TARGET}
     PUBLIC
     "${TERRARIUM_CORE_INCLUDE_DIR}"
     PRIVATE
     "${TERRARIUM_CORE_SOURCE_DIR}"
 )
 
-target_link_libraries(terrarium-core
+target_link_libraries(${TERRARIUM_CORE_TARGET}
     PRIVATE
     SDL3::SDL3
     glm::glm
     glad_gl_core46
 )
 
-target_compile_features(terrarium-core
+target_compile_features(${TERRARIUM_CORE_TARGET}
     PUBLIC
     cxx_std_23
+)
+
+set_target_properties(${TERRARIUM_CORE_TARGET}
+    PROPERTIES
+    OUTPUT_NAME "libterrarium"
 )

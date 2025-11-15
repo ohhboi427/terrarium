@@ -1,7 +1,9 @@
 #pragma once
 
+#include <terrarium/defines.hpp>
+
 namespace terra::core {
-    class App {
+    class TERRA_API App {
     public:
         auto run() -> void;
     };
