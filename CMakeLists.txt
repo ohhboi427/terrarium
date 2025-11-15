@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21..4.0)
 
 project(Terrarium
-    LANGUAGES CXX
+    LANGUAGES C CXX
 )
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
@@ -10,4 +10,5 @@ endif()
 
 include(FetchContent)
 
-add_subdirectory("src")
+add_subdirectory("terrarium-core")
+add_subdirectory("terrarium")
