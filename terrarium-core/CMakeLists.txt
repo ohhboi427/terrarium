@@ -41,26 +41,7 @@ file(GLOB_RECURSE TERRARIUM_CORE_SOURCES CONFIGURE_DEPENDS
     "${TERRARIUM_CORE_INCLUDE_DIR}/*.hpp"
 )
 
-if(TERRARIUM_BUILD_SHARED)
-    add_library(terrarium-core-shared SHARED)
-    add_library(Terrarium::Core ALIAS terrarium-core-shared)
-
-    target_compile_definitions(terrarium-core-shared
-        PUBLIC
-        TERRA_BUILD_SHARED
-        PRIVATE
-        TERRA_EXPORT
-    )
-
-    set(TERRARIUM_CORE_TARGET terrarium-core-shared)
-endif()
-
-if(TERRARIUM_BUILD_STATIC)
-    add_library(terrarium-core-static STATIC)
-    add_library(Terrarium::Core ALIAS terrarium-core-static)
-
-    set(TERRARIUM_CORE_TARGET terrarium-core-static)
-endif()
+terrarium_add_module(Core)
 
 target_sources(${TERRARIUM_CORE_TARGET}
     PRIVATE

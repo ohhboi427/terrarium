@@ -13,6 +13,9 @@ include(FetchContent)
 option(TERRARIUM_BUILD_SHARED "Build a shared version of the library" OFF)
 option(TERRARIUM_BUILD_STATIC "Build a static version of the library" OFF)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(TerrariumModule)
+
 if(NOT TERRARIUM_BUILD_SHARED AND NOT TERRARIUM_BUILD_STATIC)
     if(DEFINED BUILD_SHARED_LIBS)
         if(BUILD_SHARED_LIBS)
