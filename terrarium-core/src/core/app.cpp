@@ -1,4 +1,4 @@
-#include <terrarium/app.hpp>
+#include <terrarium/core/app.hpp>
 
 #include <SDL3/SDL.h>
 
