@@ -1,3 +1,6 @@
+# CMake
+CMakeUserPresets.json
+
 # Binaries
 build/
 cache/

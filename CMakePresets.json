@@ -18,28 +18,33 @@
         "value": "x64",
         "strategy": "external"
       },
-      "binaryDir": "${sourceDir}/build",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
-        "CMAKE_C_COMPILER": "clang-cl",
-        "CMAKE_CXX_COMPILER": "clang-cl",
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl",
         "CMAKE_CXX_FLAGS": "/W4 /WX",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "bin",
         "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "lib",
         "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "lib"
+      },
+      "vendor": {
+        "jetbrains.com/clion": {
+          "toolchain": "Visual Studio"
+        }
       }
     }
   ],
   "buildPresets": [
     {
-      "name": "dev",
+      "name": "windows-dev",
       "displayName": "Development",
       "configurePreset": "windows",
       "configuration": "Debug"
     },
     {
-      "name": "release",
+      "name": "windows-release",
       "displayName": "Release",
       "configurePreset": "windows",
       "configuration": "Release"
