@@ -33,26 +33,17 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glad)
 glad_add_library(glad_gl_core46 SHARED API gl:core=4.6 EXTENSIONS NONE)
 
-set(TERRARIUM_CORE_SOURCE_DIR "src")
-set(TERRARIUM_CORE_INCLUDE_DIR "include")
-
-file(GLOB_RECURSE TERRARIUM_CORE_SOURCES CONFIGURE_DEPENDS
-    "${TERRARIUM_CORE_SOURCE_DIR}/*.cpp"
-    "${TERRARIUM_CORE_INCLUDE_DIR}/*.hpp"
-)
-
 terrarium_add_module(Core)
-
-target_sources(${TERRARIUM_CORE_TARGET}
-    PRIVATE
-    ${TERRARIUM_CORE_SOURCES}
+terrarium_glob_sources(${TERRARIUM_CORE_TARGET}
+    "src/*.cpp"
+    "src/core/*.cpp"
 )
 
 target_include_directories(${TERRARIUM_CORE_TARGET}
     PUBLIC
-    "${TERRARIUM_CORE_INCLUDE_DIR}"
+    "include"
     PRIVATE
-    "${TERRARIUM_CORE_SOURCE_DIR}"
+    "src"
 )
 
 target_link_libraries(${TERRARIUM_CORE_TARGET}

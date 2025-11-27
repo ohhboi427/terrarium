@@ -1,3 +1,12 @@
+function(terrarium_glob_sources TARGET_NAME)
+    file(GLOB SOURCES CONFIGURE_DEPENDS ${ARGN})
+
+    target_sources(${TARGET_NAME}
+        PRIVATE
+        ${SOURCES}
+    )
+endfunction()
+
 function(terrarium_add_module MODULE_NAME)
     string(TOLOWER ${MODULE_NAME} MODULE_LOWER)
     string(TOUPPER ${MODULE_NAME} MODULE_UPPER)
