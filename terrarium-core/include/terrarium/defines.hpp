@@ -18,9 +18,10 @@
 #   define TERRA_API
 #endif
 
+#include <cstddef>
 #include <cstdint>
 
-namespace terra::core::inline primitives {
+namespace terra::inline primitives {
     using u8 = std::uint8_t;
     using u16 = std::uint16_t;
     using u32 = std::uint32_t;
@@ -35,4 +36,6 @@ namespace terra::core::inline primitives {
 
     using f32 = float;
     using f64 = double;
+
+    using byte = std::byte;
 }
