@@ -1,5 +1,7 @@
 #include <terrarium/core/app.hpp>
 
+#include <terrarium/debug.hpp>
+
 #include <SDL3/SDL.h>
 
 #include <glad/gl.h>
