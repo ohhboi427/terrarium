@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <future>
+#include <memory_resource>
 #include <type_traits>
 
 namespace terra::core {
@@ -11,35 +12,27 @@ namespace terra::core {
     auto thread_pool_destroy() -> void;
 
     namespace detail {
-        auto enqueue_task(std::move_only_function<void()> task) -> void;
+        using Task = std::move_only_function<void(std::pmr::memory_resource&)>;
+
+        auto enqueue_task(Task&& task) -> void;
     }
 
-    template<typename F, typename... Args>
-        requires std::is_invocable_r_v<void, F, Args...>
-    auto post_task(F&& function, Args&&... args) -> void {
-        detail::enqueue_task(
-            [function = std::forward<F>(function), ...args = std::forward<Args>(args)] -> void {
-                std::invoke(function, args...);
-            }
-        );
+    template<typename F>
+        requires std::is_invocable_r_v<void, F, std::pmr::memory_resource&>
+    auto post_task(F&& function) -> void {
+        detail::enqueue_task(std::forward<F>(function));
     }
 
-    template<typename F, typename... Args>
-        requires std::is_invocable_v<F, Args...>
-    auto submit_task(F&& function, Args&&... args) -> std::future<std::invoke_result_t<F, Args...>> {
-        using Ret = std::invoke_result_t<F, Args...>;
-
-        auto task = std::packaged_task{
-            [function = std::forward<F>(function), ...args = std::forward<Args>(args)] -> Ret {
-                return std::invoke(function, args...);
-            }
-        };
+    template<typename F>
+        requires std::is_invocable_v<F, std::pmr::memory_resource&>
+    auto submit_task(F&& function) -> std::future<std::invoke_result_t<F, std::pmr::memory_resource&>> {
+        auto task = std::packaged_task{ std::forward<F>(function) };
 
         auto future = task.get_future();
 
         detail::enqueue_task(
-            [task = std::move(task)] mutable -> void {
-                std::invoke(task);
+            [task = std::move(task)](std::pmr::memory_resource& scratch) mutable -> void {
+                std::invoke(task, scratch);
             }
         );
 

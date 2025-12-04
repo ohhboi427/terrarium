@@ -1,6 +1,7 @@
 #include <terrarium/core/task.hpp>
 
 #include <condition_variable>
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <stop_token>
@@ -14,11 +15,20 @@ namespace terra::core {
 
         std::mutex g_tasks_mutex{};
         std::condition_variable_any g_tasks_notifier{};
-        std::queue<std::move_only_function<void()>> g_tasks{};
+        std::queue<detail::Task> g_tasks{};
 
         auto thread_loop(const std::stop_token& token) -> void {
+            static constexpr auto SCRATCH_SIZE = 4_mb;
+
+            const auto scratch = std::make_unique_for_overwrite<byte[]>(SCRATCH_SIZE);
+            std::pmr::monotonic_buffer_resource resource{
+                scratch.get(),
+                SCRATCH_SIZE,
+                std::pmr::new_delete_resource()
+            };
+
             while(true) {
-                std::move_only_function<void()> task{};
+                detail::Task task{};
 
                 {
                     std::unique_lock lock{ g_tasks_mutex };
@@ -38,7 +48,8 @@ namespace terra::core {
                     g_tasks.pop();
                 }
 
-                task();
+                task(resource);
+                resource.release();
             }
         }
     }
@@ -57,7 +68,7 @@ namespace terra::core {
         g_workers.clear();
     }
 
-    auto detail::enqueue_task(std::move_only_function<void()> task) -> void {
+    auto detail::enqueue_task(Task&& task) -> void {
         {
             std::unique_lock lock{ g_tasks_mutex };
             g_tasks.push(std::move(task));
