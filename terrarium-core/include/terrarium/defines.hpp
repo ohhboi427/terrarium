@@ -39,3 +39,21 @@ namespace terra::inline primitives {
 
     using byte = std::byte;
 }
+
+namespace terra::inline literals::inline memory_literals {
+    [[nodiscard]] consteval auto operator""_b(const usize size) noexcept -> usize {
+        return size;
+    }
+
+    [[nodiscard]] consteval auto operator""_kb(const usize size) noexcept -> usize {
+        return size * 1024U;
+    }
+
+    [[nodiscard]] consteval auto operator""_mb(const usize size) noexcept -> usize {
+        return size * 1024U * 1024U;
+    }
+
+    [[nodiscard]] consteval auto operator""_gb(const usize size) noexcept -> usize {
+        return size * 1024U * 1024U * 1024U;
+    }
+}
