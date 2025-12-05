@@ -1,9 +1,8 @@
-#include <array>
 #include <terrarium/debug.hpp>
 
+#include <array>
 #include <bit>
 #include <csignal>
-#include <iterator>
 #include <new>
 
 #include <Windows.h>
@@ -13,7 +12,7 @@
 
 namespace terra {
     namespace {
-        auto crash_handler() -> void {
+        auto crash_handler() noexcept -> void {
             using namespace std::string_view_literals;
 
             const HANDLE process = GetCurrentProcess();
@@ -61,7 +60,7 @@ namespace terra {
             SymCleanup(process);
         }
 
-        auto signal_handler(int signal) noexcept -> void {
+        auto signal_handler(const int signal) noexcept -> void {
             const auto signal_name = [signal] noexcept -> std::string_view {
                 using namespace std::string_view_literals;
 

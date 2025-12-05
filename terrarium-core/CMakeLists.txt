@@ -45,6 +45,12 @@ if(WIN32)
     )
 endif()
 
+if(UNIX)
+    terrarium_glob_sources(${TERRARIUM_CORE_TARGET}
+        "src/linux/*.cpp"
+    )
+endif()
+
 target_include_directories(${TERRARIUM_CORE_TARGET}
     PUBLIC
     "include"
