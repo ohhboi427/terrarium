@@ -1,5 +1,6 @@
 #include <terrarium/core/app.hpp>
 
+#include <terrarium/debug.hpp>
 #include <terrarium/core/task.hpp>
 
 #include <SDL3/SDL.h>
@@ -11,7 +12,9 @@
 
 namespace terra::core {
     auto App::run() -> void {
+        register_crash_handler();
         thread_pool_init(8U);
+
         SDL_Init(SDL_INIT_VIDEO);
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -46,6 +49,7 @@ namespace terra::core {
         }
 
         SDL_Quit();
+
         thread_pool_destroy();
     }
 }

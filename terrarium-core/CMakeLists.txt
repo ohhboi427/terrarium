@@ -39,6 +39,12 @@ terrarium_glob_sources(${TERRARIUM_CORE_TARGET}
     "src/core/*.cpp"
 )
 
+if(WIN32)
+    terrarium_glob_sources(${TERRARIUM_CORE_TARGET}
+        "src/win/*.cpp"
+    )
+endif()
+
 target_include_directories(${TERRARIUM_CORE_TARGET}
     PUBLIC
     "include"
