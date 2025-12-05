@@ -18,6 +18,7 @@ namespace terra {
         Fatal
     };
 
+    TERRA_API auto log_raw(std::string_view message) -> void;
     TERRA_API auto log(Severity severity, std::string_view message) -> void;
 
     template<std::formattable<char>... Args>

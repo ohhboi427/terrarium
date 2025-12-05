@@ -15,6 +15,8 @@ namespace terra::core {
         register_crash_handler();
         thread_pool_init(8U);
 
+        std::abort();
+
         SDL_Init(SDL_INIT_VIDEO);
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);

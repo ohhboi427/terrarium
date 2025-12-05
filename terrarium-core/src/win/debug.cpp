@@ -3,9 +3,8 @@
 
 #include <bit>
 #include <csignal>
+#include <iterator>
 #include <new>
-#include <print>
-#include <string_view>
 
 #include <Windows.h>
 #include <DbgHelp.h>
@@ -15,6 +14,8 @@
 namespace terra {
     namespace {
         auto crash_handler() -> void {
+            using namespace std::string_view_literals;
+
             const HANDLE process = GetCurrentProcess();
 
             std::array<PVOID, 64U> frames{};
@@ -27,15 +28,34 @@ namespace terra {
             symbol.SizeOfStruct = sizeof(SYMBOL_INFO);
             symbol.MaxNameLen = symbol_buffer.size() - sizeof(SYMBOL_INFO);
 
+            std::array<char, 512U> log_buffer{};
+            usize log_size = 0U;
+
+            log_raw("Stacktrace:"sv);
             for(usize i = 0U; i != count; ++i) {
                 const PVOID address = frames[i];
                 const auto depth = count - i - 1U;
 
                 if(SymFromAddr(process, std::bit_cast<DWORD64>(address), nullptr, &symbol)) {
-                    std::println("{:2}: {} ({})", depth, symbol.Name, address);
+                    log_size = std::format_to_n(
+                        log_buffer.begin(),
+                        log_buffer.size(),
+                        "{:2}: {} ({})",
+                        depth,
+                        symbol.Name,
+                        address
+                    ).size;
                 } else {
-                    std::println("{:2}: {}", depth, address);
+                    log_size = std::format_to_n(
+                        log_buffer.begin(),
+                        log_buffer.size(),
+                        "{:2}: {}",
+                        depth,
+                        address
+                    ).size;
                 }
+
+                log_raw(std::string_view{ log_buffer.data(), log_size });
             }
 
             SymCleanup(process);

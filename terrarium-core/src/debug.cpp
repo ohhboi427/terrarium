@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <iostream>
 #include <mutex>
-#include <print>
 
 template<>
 struct std::formatter<terra::Severity> {
@@ -33,12 +33,16 @@ struct std::formatter<terra::Severity> {
 };
 
 namespace terra {
-    auto log(const Severity severity, const std::string_view message) -> void {
-        const auto timestamp = std::chrono::system_clock::now();
-
+    auto log_raw(const std::string_view message) -> void {
         static std::mutex s_mutex{};
         const std::scoped_lock lock{ s_mutex };
 
-        return std::println("{:%FT%TZ} {} {}", timestamp, severity, message);
+        std::cout << message << std::endl;
+    }
+
+    auto log(const Severity severity, const std::string_view message) -> void {
+        const auto timestamp = std::chrono::system_clock::now();
+
+        log_raw(std::format("{:%FT%TZ} {} {}", timestamp, severity, message));
     }
 }
