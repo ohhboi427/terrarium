@@ -22,27 +22,29 @@ namespace terra {
 
             SymInitialize(process, nullptr, TRUE);
 
-            std::array<byte, sizeof(SYMBOL_INFO) + 256U> symbol_buffer{};
-            SYMBOL_INFO& symbol = *std::launder(reinterpret_cast<SYMBOL_INFO*>(symbol_buffer.data()));
-            symbol.SizeOfStruct = sizeof(SYMBOL_INFO);
-            symbol.MaxNameLen = symbol_buffer.size() - sizeof(SYMBOL_INFO);
-
-            std::array<char, 512U> log_buffer{};
-            usize log_size = 0U;
-
             log_raw("Stacktrace:"sv);
             for(usize i = 0U; i != count; ++i) {
                 const PVOID address = frames[i];
                 const auto depth = count - i - 1U;
 
-                if(SymFromAddr(process, std::bit_cast<DWORD64>(address), nullptr, &symbol)) {
+                std::array<byte, sizeof(SYMBOL_INFO) + 256U> symbol_buffer{};
+                SYMBOL_INFO& symbol = *std::launder(reinterpret_cast<SYMBOL_INFO*>(symbol_buffer.data()));
+                symbol.SizeOfStruct = sizeof(SYMBOL_INFO);
+                symbol.MaxNameLen = symbol_buffer.size() - sizeof(SYMBOL_INFO);
+
+                std::array<char, 512U> log_buffer{};
+                usize log_size = 0U;
+
+                usize offset{};
+                if(SymFromAddr(process, std::bit_cast<DWORD64>(address), &offset, &symbol)) {
                     log_size = std::format_to_n(
                         log_buffer.begin(),
                         log_buffer.size(),
-                        "{:2}: {} ({})",
+                        "{:2}: {} ({} +0x{:#})",
                         depth,
                         symbol.Name,
-                        address
+                        address,
+                        offset
                     ).size;
                 } else {
                     log_size = std::format_to_n(
