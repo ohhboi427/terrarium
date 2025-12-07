@@ -18,6 +18,9 @@
 #   define TERRA_API
 #endif
 
+#define TERRA_STRINGIFY_IMPL(x) #x
+#define TERRA_STRINGIFY(x) TERRA_STRINGIFY_IMPL(x)
+
 #include <cstddef>
 #include <cstdint>
 

@@ -2,7 +2,6 @@
 
 #include <array>
 #include <csignal>
-#include <cstdlib>
 
 #include <cxxabi.h>
 #include <dlfcn.h>
