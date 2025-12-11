@@ -1,3 +1,4 @@
+#include <core/task.hpp>
 #include <terrarium/core/task.hpp>
 
 #include <condition_variable>

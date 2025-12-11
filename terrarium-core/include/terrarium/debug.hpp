@@ -7,8 +7,6 @@
 #include <utility>
 
 namespace terra {
-    auto register_crash_handler() -> void;
-
     enum class Severity : u8 {
         Trace = 0U,
         Debug,

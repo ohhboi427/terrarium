@@ -8,13 +8,10 @@
 #include <type_traits>
 
 namespace terra::core {
-    auto thread_pool_init(usize num_workers) -> void;
-    auto thread_pool_destroy() -> void;
-
     namespace detail {
         using Task = std::move_only_function<void(std::pmr::memory_resource&)>;
 
-        auto enqueue_task(Task&& task) -> void;
+        TERRA_API auto enqueue_task(Task&& task) -> void;
     }
 
     template<typename F>

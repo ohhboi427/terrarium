@@ -1,3 +1,4 @@
+#include <debug.hpp>
 #include <terrarium/debug.hpp>
 
 #include <array>
