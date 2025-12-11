@@ -1,5 +1,5 @@
-#include <debug.hpp>
-#include <terrarium/debug.hpp>
+#include <core/debug.hpp>
+#include <terrarium/core/debug.hpp>
 
 #include <algorithm>
 #include <array>
@@ -8,13 +8,13 @@
 #include <mutex>
 
 template<>
-struct std::formatter<terra::Severity> {
+struct std::formatter<terra::core::Severity> {
     static constexpr auto parse(std::format_parse_context& context) noexcept -> decltype(context.begin()) {
         return context.begin();
     }
 
     static constexpr auto format(
-        const terra::Severity severity,
+        const terra::core::Severity severity,
         std::format_context& context
     ) -> decltype(context.out()) {
         using namespace std::string_view_literals;
@@ -33,7 +33,7 @@ struct std::formatter<terra::Severity> {
     }
 };
 
-namespace terra {
+namespace terra::core {
     auto log_raw(const std::string_view message) -> void {
         static std::mutex s_mutex{};
         const std::scoped_lock lock{ s_mutex };

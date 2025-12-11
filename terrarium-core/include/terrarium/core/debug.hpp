@@ -6,7 +6,7 @@
 #include <string_view>
 #include <utility>
 
-namespace terra {
+namespace terra::core {
     enum class Severity : u8 {
         Trace = 0U,
         Debug,
@@ -16,8 +16,8 @@ namespace terra {
         Fatal
     };
 
-    TERRA_API auto log_raw(std::string_view message) -> void;
-    TERRA_API auto log(Severity severity, std::string_view message) -> void;
+    TERRA_CORE_API auto log_raw(std::string_view message) -> void;
+    TERRA_CORE_API auto log(Severity severity, std::string_view message) -> void;
 
     template<std::formattable<char>... Args>
     auto log(const Severity severity, const std::format_string<Args...> fmt, Args&&... args) -> void {

@@ -1,5 +1,5 @@
-#include <debug.hpp>
-#include <terrarium/debug.hpp>
+#include <core/debug.hpp>
+#include <terrarium/core/debug.hpp>
 
 #include <array>
 #include <bit>
@@ -11,7 +11,7 @@
 
 #pragma comment(lib, "DbgHelp.lib")
 
-namespace terra {
+namespace terra::core {
     namespace {
         auto crash_handler() noexcept -> void {
             using namespace std::string_view_literals;

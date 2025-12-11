@@ -21,7 +21,7 @@ function(terrarium_add_module MODULE_NAME)
             PUBLIC
             TERRA_BUILD_SHARED
             PRIVATE
-            TERRA_EXPORT
+            TERRA_${MODULE_UPPER}_EXPORT
         )
 
         set(TERRARIUM_${MODULE_UPPER}_TARGET ${SHARED_TARGET} PARENT_SCOPE)

@@ -11,7 +11,7 @@ namespace terra::core {
     namespace detail {
         using Task = std::move_only_function<void(std::pmr::memory_resource&)>;
 
-        TERRA_API auto enqueue_task(Task&& task) -> void;
+        TERRA_CORE_API auto enqueue_task(Task&& task) -> void;
     }
 
     template<typename F>

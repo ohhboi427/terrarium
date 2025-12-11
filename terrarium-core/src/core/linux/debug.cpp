@@ -1,5 +1,5 @@
-#include <debug.hpp>
-#include <terrarium/debug.hpp>
+#include <core/debug.hpp>
+#include <terrarium/core/debug.hpp>
 
 #include <array>
 #include <csignal>
@@ -8,7 +8,7 @@
 #include <dlfcn.h>
 #include <execinfo.h>
 
-namespace terra {
+namespace terra::core {
     namespace {
         auto crash_handler() noexcept -> void {
             using namespace std::string_view_literals;

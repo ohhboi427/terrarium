@@ -1,6 +1,6 @@
 #include <terrarium/core/app.hpp>
 
-#include <debug.hpp>
+#include <core/debug.hpp>
 #include <core/task.hpp>
 
 #include <SDL3/SDL.h>

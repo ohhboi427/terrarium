@@ -1,5 +1,5 @@
 #pragma once
 
-namespace terra {
+namespace terra::core {
     auto register_crash_handler() -> void;
 }
