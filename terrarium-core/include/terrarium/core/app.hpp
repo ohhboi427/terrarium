@@ -1,6 +1,6 @@
 #pragma once
 
-#include <terrarium/defines.hpp>
+#include <terrarium/core/base.hpp>
 
 namespace terra::core {
     class TERRA_CORE_API App {

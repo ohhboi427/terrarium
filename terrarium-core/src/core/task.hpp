@@ -1,6 +1,6 @@
 #pragma once
 
-#include <terrarium/defines.hpp>
+#include <terrarium/core/base.hpp>
 
 namespace terra::core {
     auto thread_pool_init(usize num_workers) -> void;

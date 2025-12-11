@@ -2,20 +2,15 @@
 
 #if defined(TERRA_BUILD_SHARED)
 #   if defined(_MSC_VER)
-#       if defined(TERRA_CORE_EXPORT)
-#           define TERRA_CORE_API __declspec(dllexport)
-#       else
-#           define TERRA_CORE_API __declspec(dllimport)
-#       endif
+#       define TERRA_EXPORT __declspec(dllexport)
+#       define TERRA_IMPORT __declspec(dllimport)
 #   else
-#       if defined(TERRA_EXPORT)
-#           define TERRA_CORE_API __attribute__((visibility("default")))
-#       else
-#           define TERRA_CORE_API
-#       endif
+#       define TERRA_EXPORT __attribute__((visibility("default")))
+#       define TERRA_IMPORT
 #   endif
 #else
-#   define TERRA_CORE_API
+#   define TERRA_EXPORT
+#   define TERRA_IMPORT
 #endif
 
 #define TERRA_STRINGIFY_IMPL(x) #x

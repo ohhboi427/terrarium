@@ -1,6 +1,6 @@
 #pragma once
 
-#include <terrarium/defines.hpp>
+#include <terrarium/core/base.hpp>
 
 #include <format>
 #include <string_view>
