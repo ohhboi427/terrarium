@@ -1,5 +1,4 @@
-#include <core/debug.hpp>
-#include <terrarium/core/debug.hpp>
+#include <terrarium/core/debug/log.hpp>
 
 #include <algorithm>
 #include <array>

@@ -58,18 +58,3 @@ namespace terra::core {
         log(Severity::Fatal, fmt, std::forward<Args>(args)...);
     }
 }
-
-#include <cstdlib>
-#define TERRA_ASSERT(condition) \
-    do { \
-        if(!(condition)) { \
-            ::terra::fatal("'" #condition "' evaluated to false (" __FILE_NAME__ ":" TERRA_STRINGIFY(__LINE__) ")"); \
-            ::std::abort(); \
-        } \
-    } while(false)
-
-#if not defined(NDEBUG)
-#   define TERRA_DEBUG_ASSERT(condition) TERRA_ASSERT(condition)
-#else
-#   define TERRA_DEBUG_ASSERT(condition) do {} while (false)
-#endif

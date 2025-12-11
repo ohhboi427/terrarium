@@ -1,5 +1,5 @@
-#include <core/debug.hpp>
-#include <terrarium/core/debug.hpp>
+#include <core/debug/assert.hpp>
+#include <terrarium/core/debug/assert.hpp>
 
 #include <array>
 #include <bit>
