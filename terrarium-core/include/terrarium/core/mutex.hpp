@@ -30,17 +30,14 @@ namespace terra::core {
     template<typename T>
     concept SharedLockable = is_shared_lockable_v<T>;
 
-    template<typename T, Lockable>
-        requires std::negation_v<std::is_const<T>>
-    class Mutex;
-
     template<typename T, Lockable M = std::mutex, template<Lockable> typename L = std::unique_lock>
         requires is_lockable_v<L<M>>
     class LockGuard {
-    public:
-        explicit LockGuard(Mutex<std::remove_cv_t<T>, M>& mutex)
-            : m_object{ &mutex.m_object }, m_lock{ mutex.m_mutex } {}
+        template<typename T_, Lockable>
+            requires std::negation_v<std::is_const<T_>>
+        friend class Mutex;
 
+    public:
         LockGuard(LockGuard&&) noexcept = default;
         LockGuard(const LockGuard&) = delete;
 
@@ -63,6 +60,9 @@ namespace terra::core {
     private:
         T* m_object;
         L<M> m_lock;
+
+        explicit LockGuard(T& object, M& mutex)
+            : m_object{ &object }, m_lock{ mutex } {}
     };
 
     template<typename T, SharedLockable M = std::shared_mutex>
@@ -71,10 +71,6 @@ namespace terra::core {
     template<typename T, Lockable M = std::mutex>
         requires std::negation_v<std::is_const<T>>
     class Mutex {
-        template<typename, Lockable M_, template<Lockable> typename L>
-            requires is_lockable_v<L<M_>>
-        friend class LockGuard;
-
     public:
         explicit Mutex(auto&&... args) noexcept(std::is_nothrow_constructible_v<T, decltype(args)...>)
             : m_object{ std::forward<decltype(args)>(args)... } {}
@@ -83,17 +79,17 @@ namespace terra::core {
         Mutex(const Mutex&) = delete;
 
         [[nodiscard]] auto lock() noexcept -> LockGuard<T, M> {
-            return LockGuard<T, M>{ *this };
+            return LockGuard<T, M>{ m_object, m_mutex };
         }
 
-        [[nodiscard]] auto shared_lock() noexcept
+        [[nodiscard]] auto shared_lock() const noexcept
             requires is_shared_lockable_v<M> {
-            return SharedLockGuard<T, M>{ *this };
+            return SharedLockGuard<T, M>{ m_object, m_mutex };
         }
 
     private:
         T m_object;
-        M m_mutex{};
+        mutable M m_mutex{};
     };
 
     template<typename T, SharedLockable M = std::shared_mutex>
