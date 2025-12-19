@@ -30,8 +30,8 @@ namespace terra::core {
     template<typename T>
     concept SharedLockable = is_shared_lockable_v<T>;
 
-    template<typename T, Lockable M = std::mutex, template<Lockable> typename L = std::unique_lock>
-        requires is_lockable_v<L<M>>
+    template<typename T, Lockable M = std::mutex, Lockable L = std::unique_lock<M>>
+        requires std::is_constructible_v<L, M&>
     class LockGuard {
         template<typename T_, Lockable>
             requires std::negation_v<std::is_const<T_>>
@@ -59,14 +59,14 @@ namespace terra::core {
 
     private:
         T* m_object;
-        L<M> m_lock;
+        L m_lock;
 
         explicit LockGuard(T& object, M& mutex)
             : m_object{ &object }, m_lock{ mutex } {}
     };
 
     template<typename T, SharedLockable M = std::shared_mutex>
-    using SharedLockGuard = LockGuard<const T, M, std::shared_lock>;
+    using SharedLockGuard = LockGuard<const T, M, std::shared_lock<M>>;
 
     template<typename T, Lockable M = std::mutex>
         requires std::negation_v<std::is_const<T>>
