@@ -1,10 +1,11 @@
 #include <core/task.hpp>
 #include <terrarium/core/task.hpp>
 
+#include <terrarium/core/mutex.hpp>
+
 #include <condition_variable>
 #include <memory>
 #include <memory_resource>
-#include <mutex>
 #include <queue>
 #include <stop_token>
 #include <thread>
@@ -15,9 +16,8 @@ namespace terra::core {
     namespace {
         std::vector<std::jthread> g_workers{};
 
-        std::mutex g_tasks_mutex{};
+        SharedMutex<std::queue<detail::Task>> g_tasks{};
         std::condition_variable_any g_tasks_notifier{};
-        std::queue<detail::Task> g_tasks{};
 
         auto thread_loop(const std::stop_token& token) -> void {
             static constexpr auto SCRATCH_SIZE = 4_mb;
@@ -33,21 +33,21 @@ namespace terra::core {
                 detail::Task task{};
 
                 {
-                    std::unique_lock lock{ g_tasks_mutex };
+                    auto tasks = g_tasks.lock();
                     g_tasks_notifier.wait(
-                        lock,
+                        tasks,
                         token,
-                        [] noexcept -> bool {
-                            return !g_tasks.empty();
+                        [&tasks] noexcept -> bool {
+                            return !tasks->empty();
                         }
                     );
 
-                    if(token.stop_requested() && g_tasks.empty()) {
+                    if(token.stop_requested() && tasks->empty()) {
                         return;
                     }
 
-                    task = std::move(g_tasks.front());
-                    g_tasks.pop();
+                    task = std::move(tasks->front());
+                    tasks->pop();
                 }
 
                 task(resource);
@@ -72,8 +72,8 @@ namespace terra::core {
 
     auto detail::enqueue_task(Task&& task) -> void {
         {
-            std::unique_lock lock{ g_tasks_mutex };
-            g_tasks.push(std::move(task));
+            auto tasks = g_tasks.lock();
+            tasks->push(std::move(task));
         }
 
         g_tasks_notifier.notify_one();
