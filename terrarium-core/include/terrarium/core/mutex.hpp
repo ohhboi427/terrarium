@@ -72,6 +72,8 @@ namespace terra::core {
         requires std::negation_v<std::is_const<T>>
     class Mutex {
     public:
+        using Inner = M;
+
         explicit Mutex(auto&&... args) noexcept(std::is_nothrow_constructible_v<T, decltype(args)...>)
             : m_object{ std::forward<decltype(args)>(args)... } {}
 

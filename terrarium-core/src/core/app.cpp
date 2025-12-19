@@ -1,6 +1,7 @@
 #include <terrarium/core/app.hpp>
 
 #include <terrarium/core/task.hpp>
+#include <terrarium/core/debug/log.hpp>
 
 #include <core/debug/assert.hpp>
 
@@ -16,6 +17,12 @@ namespace terra::core {
         register_crash_handler();
 
         m_world.make_resource<TaskPool>(8U);
+        auto task_pool = IExtractor<Res<TaskPool>>::operator()(m_world);
+        task_pool->submit(
+            []([[maybe_unused]] std::pmr::memory_resource& scratch) -> void {
+                info("Hello, World!");
+            }
+        ).wait();
 
         SDL_Init(SDL_INIT_VIDEO);
 
