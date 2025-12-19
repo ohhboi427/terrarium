@@ -1,39 +1,61 @@
 #pragma once
 
 #include <terrarium/core/base.hpp>
+#include <terrarium/core/mutex.hpp>
+#include <terrarium/core/ecs/resource.hpp>
 
+#include <condition_variable>
 #include <functional>
 #include <future>
 #include <memory_resource>
+#include <queue>
+#include <stop_token>
+#include <thread>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 namespace terra::core {
-    namespace detail {
+    class TERRA_CORE_API TaskPool : IResource {
         using Task = std::move_only_function<void(std::pmr::memory_resource&)>;
 
-        TERRA_CORE_API auto enqueue_task(Task&& task) -> void;
-    }
+        template<std::invocable<std::pmr::memory_resource&> F>
+        using TaskResult = std::invoke_result_t<F, std::pmr::memory_resource&>;
 
-    template<typename F>
-        requires std::is_invocable_r_v<void, F, std::pmr::memory_resource&>
-    auto post_task(F&& function) -> void {
-        detail::enqueue_task(std::forward<F>(function));
-    }
+    public:
+        explicit TaskPool(usize num_workers);
+        ~TaskPool() noexcept;
 
-    template<typename F>
-        requires std::is_invocable_v<F, std::pmr::memory_resource&>
-    [[nodiscard]] auto submit_task(F&& function) -> std::future<std::invoke_result_t<F, std::pmr::memory_resource&>> {
-        auto task = std::packaged_task{ std::forward<F>(function) };
+        TaskPool(TaskPool&&) noexcept = delete;
+        TaskPool(const TaskPool&) = delete;
 
-        auto future = task.get_future();
+        template<std2::invocable_r<void, std::pmr::memory_resource&> F>
+        auto post(F&& function) -> void {
+            enqueue(std::forward<F>(function));
+        }
 
-        detail::enqueue_task(
-            [task = std::move(task)](std::pmr::memory_resource& scratch) mutable -> void {
-                std::invoke(task, scratch);
-            }
-        );
+        template<std::invocable<std::pmr::memory_resource&> F>
+        [[nodiscard]] auto submit(F&& function) -> std::future<TaskResult<F>> {
+            auto task = std::packaged_task{ std::forward<F>(function) };
+            auto future = task.get_future();
 
-        return future;
-    }
+            enqueue(
+                [task = std::move(task)](std::pmr::memory_resource& scratch) mutable -> void {
+                    std::invoke(task, scratch);
+                }
+            );
+
+            return future;
+        }
+
+    private:
+        std::vector<std::jthread> m_workers{};
+
+        Mutex<std::queue<Task>> m_tasks{};
+        std::condition_variable_any m_tasks_notifier{};
+
+        auto worker_loop(std::stop_token&& token) -> void;
+
+        auto enqueue(Task&& task) -> void;
+    };
 }

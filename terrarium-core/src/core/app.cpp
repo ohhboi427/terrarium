@@ -1,6 +1,7 @@
 #include <terrarium/core/app.hpp>
 
-#include <core/task.hpp>
+#include <terrarium/core/task.hpp>
+
 #include <core/debug/assert.hpp>
 
 #include <SDL3/SDL.h>
@@ -13,7 +14,8 @@
 namespace terra::core {
     auto App::run() -> void {
         register_crash_handler();
-        thread_pool_init(8U);
+
+        m_world.make_resource<TaskPool>(8U);
 
         SDL_Init(SDL_INIT_VIDEO);
 
@@ -49,7 +51,5 @@ namespace terra::core {
         }
 
         SDL_Quit();
-
-        thread_pool_destroy();
     }
 }

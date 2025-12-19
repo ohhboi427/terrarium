@@ -22,6 +22,11 @@
 #include <type_traits>
 #include <utility>
 
+namespace std2 {
+    template<typename T, typename R, typename... Args>
+    concept invocable_r = std::is_invocable_r_v<R, T, Args...>;
+}
+
 namespace terra {
     using UniqueAny = std::unique_ptr<void, void(*)(void*)>;
 
