@@ -3,6 +3,10 @@
 
 #include <array>
 #include <csignal>
+#include <cstdlib>
+#include <format>
+#include <string_view>
+#include <utility>
 
 #include <cxxabi.h>
 #include <dlfcn.h>

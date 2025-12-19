@@ -4,7 +4,10 @@
 #include <array>
 #include <bit>
 #include <csignal>
+#include <format>
 #include <new>
+#include <string_view>
+#include <utility>
 
 #include <Windows.h>
 #include <DbgHelp.h>

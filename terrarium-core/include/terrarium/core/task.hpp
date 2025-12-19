@@ -6,6 +6,7 @@
 #include <future>
 #include <memory_resource>
 #include <type_traits>
+#include <utility>
 
 namespace terra::core {
     namespace detail {
@@ -22,7 +23,7 @@ namespace terra::core {
 
     template<typename F>
         requires std::is_invocable_v<F, std::pmr::memory_resource&>
-    auto submit_task(F&& function) -> std::future<std::invoke_result_t<F, std::pmr::memory_resource&>> {
+    [[nodiscard]] auto submit_task(F&& function) -> std::future<std::invoke_result_t<F, std::pmr::memory_resource&>> {
         auto task = std::packaged_task{ std::forward<F>(function) };
 
         auto future = task.get_future();

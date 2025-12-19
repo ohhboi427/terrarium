@@ -3,8 +3,11 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <format>
 #include <iostream>
 #include <mutex>
+#include <string_view>
+#include <utility>
 
 template<>
 struct std::formatter<terra::core::Severity> {

@@ -3,6 +3,7 @@
 
 #include <condition_variable>
 #include <memory>
+#include <memory_resource>
 #include <mutex>
 #include <queue>
 #include <stop_token>
