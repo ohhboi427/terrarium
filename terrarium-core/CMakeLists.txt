@@ -38,6 +38,7 @@ terrarium_glob_sources(${TERRARIUM_CORE_TARGET}
     "src/*.cpp"
     "src/core/*.cpp"
     "src/core/debug/*.cpp"
+    "src/core/ecs/*.cpp"
 )
 
 if(WIN32)
