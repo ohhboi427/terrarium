@@ -74,8 +74,10 @@ namespace terra::core {
     public:
         using Inner = M;
 
-        explicit Mutex(auto&&... args) noexcept(std::is_nothrow_constructible_v<T, decltype(args)...>)
-            : m_object{ std::forward<decltype(args)>(args)... } {}
+        template<typename... Args>
+            requires std::is_constructible_v<T, Args...>
+        explicit Mutex(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>)
+            : m_object{ std::forward<Args>(args)... } {}
 
         Mutex(Mutex&&) noexcept = delete;
         Mutex(const Mutex&) = delete;
