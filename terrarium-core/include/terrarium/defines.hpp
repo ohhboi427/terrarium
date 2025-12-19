@@ -18,6 +18,24 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
+namespace terra {
+    using UniqueAny = std::unique_ptr<void, void(*)(void*)>;
+
+    template<typename T, typename... Args>
+        requires std::is_constructible_v<T, Args...>
+    [[nodiscard]] constexpr auto make_unique_any(Args&&... args) -> UniqueAny {
+        return {
+            new T(std::forward<Args>(args)...),
+            [](void* const ptr) noexcept -> void {
+                delete static_cast<T*>(ptr);
+            }
+        };
+    }
+}
 
 namespace terra::inline primitives {
     using u8 = std::uint8_t;
