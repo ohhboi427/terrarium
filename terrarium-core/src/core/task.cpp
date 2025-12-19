@@ -16,7 +16,7 @@ namespace terra::core {
     namespace {
         std::vector<std::jthread> g_workers{};
 
-        SharedMutex<std::queue<detail::Task>> g_tasks{};
+        Mutex<std::queue<detail::Task>> g_tasks{};
         std::condition_variable_any g_tasks_notifier{};
 
         auto thread_loop(const std::stop_token& token) -> void {
