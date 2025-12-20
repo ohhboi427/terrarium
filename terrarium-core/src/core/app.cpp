@@ -1,5 +1,6 @@
 #include <terrarium/core/app.hpp>
 
+#include <terrarium/core/event.hpp>
 #include <terrarium/core/task.hpp>
 
 #include <core/debug/assert.hpp>
@@ -14,6 +15,9 @@
 namespace terra::core {
     auto App::run() -> void {
         register_crash_handler();
+
+        EventBus event_bus{};
+        m_world.make_resource<EventDispatcher>(event_bus);
 
         TaskPool task_pool{ 8U };
         m_world.make_resource<TaskPoolView>(task_pool);

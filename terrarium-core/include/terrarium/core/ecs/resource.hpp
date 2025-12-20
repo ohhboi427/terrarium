@@ -8,7 +8,7 @@ namespace terra::core {
     struct TERRA_CORE_API IResource {};
 
     template<typename T>
-    struct is_resource : std::is_base_of<IResource, T> {};
+    struct is_resource : std::is_base_of<IResource, std::remove_cvref_t<T>> {};
 
     template<typename T>
     constexpr bool is_resource_v = is_resource<T>::value;
