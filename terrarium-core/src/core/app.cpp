@@ -12,12 +12,18 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <atomic>
+
 namespace terra::core {
     auto App::run() -> void {
         register_crash_handler();
 
-        EventBus event_bus{};
-        m_world.make_resource<EventDispatcher>(event_bus);
+        m_world.make_resource<EventDispatcher>(m_event_bus);
+        m_event_bus.register_listener<AppQuitEvent>(
+            [this](const AppQuitEvent&) noexcept -> void {
+                m_running.store(false, std::memory_order::release);
+            }
+        );
 
         TaskPool task_pool{ 8U };
         m_world.make_resource<TaskPoolView>(task_pool);
@@ -38,18 +44,21 @@ namespace terra::core {
 
         gladLoadGL(SDL_GL_GetProcAddress);
 
-        bool running = true;
-        while(running) {
+        while(true) {
             SDL_Event event{};
             while(SDL_PollEvent(&event)) {
                 switch(event.type) {
                 case SDL_EVENT_QUIT:
-                    running = false;
+                    m_event_bus.dispatch(AppQuitEvent{});
                     break;
 
                 default:
                     break;
                 }
+            }
+
+            if(!m_running.load(std::memory_order::acquire)) {
+                break;
             }
 
             static constexpr glm::vec4 CLEAR_COLOR{ 1.0F, 0.0F, 1.0F, 1.0F };

@@ -6,11 +6,14 @@
 #include <terrarium/core/ecs/system.hpp>
 #include <terrarium/core/ecs/world.hpp>
 
+#include <atomic>
 #include <functional>
 #include <type_traits>
 #include <utility>
 
 namespace terra::core {
+    struct TERRA_CORE_API AppQuitEvent : IEvent {};
+
     class TERRA_CORE_API App {
         template<Event E, Extractor... Es>
         using Listener = void(*)(const E&, Es...);
@@ -43,6 +46,8 @@ namespace terra::core {
         }
 
     private:
+        std::atomic<bool> m_running = true;
+
         EventBus m_event_bus{};
 
         World m_world{};
