@@ -43,12 +43,14 @@ terrarium_glob_sources(${TERRARIUM_CORE_TARGET}
 
 if(WIN32)
     terrarium_glob_sources(${TERRARIUM_CORE_TARGET}
+        "src/core/win/*.cpp"
         "src/core/debug/win/*.cpp"
     )
 endif()
 
 if(UNIX)
     terrarium_glob_sources(${TERRARIUM_CORE_TARGET}
+        "src/core/linux/*.cpp"
         "src/core/debug/linux/*.cpp"
     )
 endif()

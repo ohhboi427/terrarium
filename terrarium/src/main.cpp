@@ -1,4 +1,5 @@
 #include <terrarium/core/app.hpp>
+#include <terrarium/core/plugin.hpp>
 #include <terrarium/core/task.hpp>
 #include <terrarium/core/debug/log.hpp>
 #include <terrarium/core/ecs/world.hpp>
@@ -23,5 +24,6 @@ auto terrarium_plugin(App& app) noexcept -> void {
 auto main() -> i32 {
     App{}
         .add_plugin(terrarium_plugin)
+        .add_plugin(PluginLoader{ "mods" })
         .run();
 }

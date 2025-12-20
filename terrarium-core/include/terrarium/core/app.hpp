@@ -1,6 +1,7 @@
 #pragma once
 
 #include <terrarium/core/base.hpp>
+#include <terrarium/core/plugin.hpp>
 #include <terrarium/core/ecs/system.hpp>
 #include <terrarium/core/ecs/world.hpp>
 
@@ -9,17 +10,6 @@
 #include <utility>
 
 namespace terra::core {
-    class App;
-
-    template<typename T>
-    struct is_plugin : std::is_invocable<T, App&> {};
-
-    template<typename T>
-    constexpr bool is_plugin_v = is_plugin<T>::value;
-
-    template<typename T>
-    concept Plugin = is_plugin_v<T>;
-
     class TERRA_CORE_API App {
     public:
         auto run() -> void;
