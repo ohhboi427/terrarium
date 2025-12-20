@@ -1,11 +1,9 @@
 #pragma once
 
 #include <terrarium/core/base.hpp>
-#include <terrarium/core/task.hpp>
 #include <terrarium/core/ecs/system.hpp>
 #include <terrarium/core/ecs/world.hpp>
 
-#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -20,8 +18,6 @@ namespace terra::core {
         }
 
     private:
-        std::unique_ptr<TaskPool> m_task_pool{};
-
         World m_world{};
         Schedule m_schedule{};
     };
