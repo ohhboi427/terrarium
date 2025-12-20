@@ -38,7 +38,7 @@ namespace terra::core {
 
         template<std::invocable<std::pmr::memory_resource&> F>
         [[nodiscard]] auto submit(F&& function) -> std::future<TaskResult<F>> {
-            auto task = std::packaged_task{ std::forward<F>(function) };
+            std::packaged_task task{ std::forward<F>(function) };
             auto future = task.get_future();
 
             enqueue(

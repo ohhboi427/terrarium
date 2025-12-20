@@ -9,6 +9,7 @@ namespace terra::core {
     template<typename T>
     struct is_lockable : std::bool_constant<requires(T& object) {
             { object.lock() };
+            { object.try_lock() };
             { object.unlock() };
         }> {};
 
@@ -21,6 +22,7 @@ namespace terra::core {
     template<typename T>
     struct is_shared_lockable : std::bool_constant<is_lockable_v<T> && requires(T& object) {
             { object.lock_shared() };
+            { object.try_lock_shared() };
             { object.unlock_shared() };
         }> {};
 
@@ -51,6 +53,10 @@ namespace terra::core {
 
         auto lock() -> void {
             m_lock.lock();
+        }
+
+        [[nodiscard]] auto try_lock() -> bool {
+            return m_lock.try_lock();
         }
 
         auto unlock() -> void {

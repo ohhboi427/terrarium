@@ -86,7 +86,7 @@ namespace terra::core {
                 reinterpret_cast<detail::SystemHandle>(system),
                 SystemMetadata{
                     .function = [system](World& world) noexcept -> void {
-                        system(IExtractor<Es>::operator()(world)...);
+                        std::invoke(system, IExtractor<Es>::operator()(world)...);
                     },
                     .orderings = { std::forward<decltype(orderings)>(orderings)... }
                 }
