@@ -4,7 +4,7 @@
 #include <utility>
 
 namespace terra::core {
-    PluginLoader::PluginLoader(std::filesystem::path&& discover_path)
+    PluginLoader::PluginLoader(std::filesystem::path&& discover_path) noexcept
         : m_discover_folder{ std::move(discover_path) } {}
 
     auto PluginLoader::operator()(App& app) const -> void {

@@ -14,7 +14,7 @@
 
 namespace terra::core {
     namespace {
-        auto crash_handler() noexcept -> void {
+        auto crash_handler() -> void {
             using namespace std::string_view_literals;
 
             std::array<void*, 64U> frames{};
@@ -69,7 +69,7 @@ namespace terra::core {
             }
         }
 
-        auto signal_handler(const int signal) noexcept -> void {
+        auto signal_handler(const int signal) -> void {
             const auto signal_name = [signal] noexcept -> std::string_view {
                 using namespace std::string_view_literals;
 

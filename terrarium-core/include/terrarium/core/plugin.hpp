@@ -19,7 +19,7 @@ namespace terra::core {
 
     class TERRA_CORE_API PluginLoader {
     public:
-        explicit PluginLoader(std::filesystem::path&& discover_path);
+        explicit PluginLoader(std::filesystem::path&& discover_path) noexcept;
 
         auto operator()(App& app) const -> void;
 

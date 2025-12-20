@@ -88,11 +88,11 @@ namespace terra::core {
         Mutex(Mutex&&) noexcept = delete;
         Mutex(const Mutex&) = delete;
 
-        [[nodiscard]] auto lock() noexcept -> LockGuard<T, M> {
+        [[nodiscard]] auto lock() -> LockGuard<T, M> {
             return LockGuard<T, M>{ m_object, m_mutex };
         }
 
-        [[nodiscard]] auto shared_lock() const noexcept
+        [[nodiscard]] auto shared_lock() const
             requires is_shared_lockable_v<M> {
             return SharedLockGuard<T, M>{ m_object, m_mutex };
         }
