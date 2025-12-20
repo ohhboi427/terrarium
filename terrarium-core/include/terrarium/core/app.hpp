@@ -24,13 +24,17 @@ namespace terra::core {
     public:
         auto run() -> void;
 
-        auto add_plugin(Plugin auto&& plugin) -> void {
+        auto add_plugin(Plugin auto&& plugin) -> App& {
             std::invoke(plugin, *this);
+
+            return *this;
         }
 
         template<Extractor... Es>
-        auto add_system(const System<Es...> system, std::convertible_to<SystemOrdering> auto&&... orderings) -> void {
+        auto add_system(const System<Es...> system, std::convertible_to<SystemOrdering> auto&&... orderings) -> App& {
             m_schedule.add_system(system, std::forward<decltype(orderings)>(orderings)...);
+
+            return *this;
         }
 
     private:

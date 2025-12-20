@@ -21,7 +21,7 @@ auto terrarium_plugin(App& app) noexcept -> void {
 }
 
 auto main() -> i32 {
-    App app{};
-    app.add_plugin(terrarium_plugin);
-    app.run();
+    App{}
+        .add_plugin(terrarium_plugin)
+        .run();
 }
