@@ -7,25 +7,19 @@
 #include <dlfcn.h>
 
 namespace terra::core {
-    auto PluginLoader::operator()(App& app) const -> void {
-        if(!std::filesystem::exists(m_discover_folder)) {
+    auto PluginLoader::load_path(const std::filesystem::path& path, App& app) -> void {
+        if(path.extension() != ".so") {
             return;
         }
 
-        for(const auto& entry : std::filesystem::directory_iterator{ m_discover_folder }) {
-            if(entry.path().extension() != ".so") {
-                continue;
-            }
+        void* handle = dlopen(path.c_str(), RTLD_LAZY);
+        if(!handle) {
+            return;
+        }
 
-            void* handle = dlopen(entry.path().c_str(), RTLD_LAZY);
-            if(!handle) {
-                continue;
-            }
-
-            using PluginFunc = void(*)(App&);
-            if(const auto func = reinterpret_cast<PluginFunc>(dlsym(handle, "terra_plugin")); func) {
-                app.add_plugin(func);
-            }
+        using PluginFunc = void(*)(App&);
+        if(const auto func = reinterpret_cast<PluginFunc>(dlsym(handle, "terra_plugin")); func) {
+            app.add_plugin(func);
         }
     }
 }

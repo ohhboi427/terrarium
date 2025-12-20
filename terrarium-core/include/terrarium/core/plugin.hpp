@@ -25,5 +25,7 @@ namespace terra::core {
 
     private:
         std::filesystem::path m_discover_folder;
+
+        static auto load_path(const std::filesystem::path& path, App& app) -> void;
     };
 }
