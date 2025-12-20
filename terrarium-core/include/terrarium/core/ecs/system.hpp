@@ -33,7 +33,39 @@ namespace terra::core {
             : system{ reinterpret_cast<detail::SystemHandle>(system) } {}
     };
 
-    using SystemOrdering = std::variant<Before, After>;
+    struct TERRA_CORE_API SystemOrdering : std::variant<Before, After> {
+        using std::variant<Before, After>::variant;
+
+        [[nodiscard]] constexpr auto reference() const noexcept -> detail::SystemHandle {
+            return std::visit(
+                Visitor{
+                    [](const Before& before) noexcept -> detail::SystemHandle {
+                        return before.system;
+                    },
+                    [](const After& after) noexcept -> detail::SystemHandle {
+                        return after.system;
+                    },
+                },
+                *this
+            );
+        }
+
+        [[nodiscard]] constexpr auto to_pair(
+            const detail::SystemHandle other
+        ) const noexcept -> std::pair<detail::SystemHandle, detail::SystemHandle> {
+            return std::visit(
+                Visitor{
+                    [other](const Before& before) noexcept -> std::pair<detail::SystemHandle, detail::SystemHandle> {
+                        return { other, before.system };
+                    },
+                    [other](const After& after) noexcept -> std::pair<detail::SystemHandle, detail::SystemHandle> {
+                        return { after.system, other };
+                    },
+                },
+                *this
+            );
+        }
+    };
 
     class TERRA_CORE_API Schedule {
         using SystemFunction = std::move_only_function<void(World&)>;

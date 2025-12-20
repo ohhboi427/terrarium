@@ -40,6 +40,11 @@ namespace terra {
             }
         };
     }
+
+    template<typename... Ts>
+    struct Visitor : Ts... {
+        using Ts::operator()...;
+    };
 }
 
 namespace terra::inline primitives {
