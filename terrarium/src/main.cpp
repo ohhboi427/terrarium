@@ -9,9 +9,11 @@ using namespace terra::primitives;
 using namespace terra::core;
 
 auto hello_world(Res<TaskPoolView> pool) -> void {
-    pool->submit([]([[maybe_unused]] std::pmr::memory_resource& scratch) -> void {
-        info("Hello World");
-    }).wait();
+    pool->submit(
+        []([[maybe_unused]] std::pmr::memory_resource& scratch) -> void {
+            info("Hello World");
+        }
+    ).wait();
 }
 
 auto main() -> i32 {

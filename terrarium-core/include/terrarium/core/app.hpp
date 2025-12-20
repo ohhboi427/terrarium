@@ -5,9 +5,9 @@
 #include <terrarium/core/ecs/system.hpp>
 #include <terrarium/core/ecs/world.hpp>
 
-#include <functional>
 #include <memory>
-#include <vector>
+#include <type_traits>
+#include <utility>
 
 namespace terra::core {
     class TERRA_CORE_API App {
@@ -15,16 +15,14 @@ namespace terra::core {
         auto run() -> void;
 
         template<Extractor... Es>
-        auto add_system(const System<Es...> system) -> void {
-            m_systems.emplace_back([system](World& world) mutable -> void {
-                system(IExtractor<Es>::operator()(world)...);
-            });
+        auto add_system(const System<Es...> system, std::convertible_to<SystemOrdering> auto&&... orderings) -> void {
+            m_schedule.add_system(system, std::forward<decltype(orderings)>(orderings)...);
         }
 
     private:
         std::unique_ptr<TaskPool> m_task_pool{};
-        World m_world{};
 
-        std::vector<std::move_only_function<void(World&)>> m_systems{};
+        World m_world{};
+        Schedule m_schedule{};
     };
 }

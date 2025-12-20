@@ -20,9 +20,8 @@ namespace terra::core {
         m_task_pool = std::make_unique<TaskPool>(8U);
         m_world.make_resource<TaskPoolView>(*m_task_pool);
 
-        for(auto& system : m_systems) {
-            system(m_world);
-        }
+        m_schedule.build();
+        m_schedule.run(m_world);
 
         SDL_Init(SDL_INIT_VIDEO);
 
