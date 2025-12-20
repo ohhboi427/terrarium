@@ -1,10 +1,12 @@
 #pragma once
 
 #include <terrarium/core/base.hpp>
+#include <terrarium/core/task.hpp>
 #include <terrarium/core/ecs/system.hpp>
 #include <terrarium/core/ecs/world.hpp>
 
 #include <functional>
+#include <memory>
 #include <vector>
 
 namespace terra::core {
@@ -20,6 +22,7 @@ namespace terra::core {
         }
 
     private:
+        std::unique_ptr<TaskPool> m_task_pool{};
         World m_world{};
 
         std::vector<std::move_only_function<void(World&)>> m_systems{};

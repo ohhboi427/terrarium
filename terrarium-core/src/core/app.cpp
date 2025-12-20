@@ -11,11 +11,15 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <memory>
+
 namespace terra::core {
     auto App::run() -> void {
         register_crash_handler();
 
-        m_world.make_resource<TaskPool>(8U);
+        m_task_pool = std::make_unique<TaskPool>(8U);
+        m_world.make_resource<TaskPoolView>(*m_task_pool);
+
         for(auto& system : m_systems) {
             system(m_world);
         }
