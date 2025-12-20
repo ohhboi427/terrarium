@@ -22,6 +22,8 @@ namespace terra::core {
         using PluginFunc = void(*)(App&);
         if(const auto func = reinterpret_cast<PluginFunc>(GetProcAddress(handle, "terra_plugin")); func) {
             app.add_plugin(func);
+        } else {
+            FreeLibrary(handle);
         }
     }
 }
