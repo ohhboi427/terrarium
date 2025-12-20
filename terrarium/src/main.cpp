@@ -16,8 +16,12 @@ auto hello_world(Res<TaskPoolView> pool) -> void {
     ).wait();
 }
 
+auto terrarium_plugin(App& app) noexcept -> void {
+    app.add_system(hello_world);
+}
+
 auto main() -> i32 {
     App app{};
-    app.add_system(hello_world);
+    app.add_plugin(terrarium_plugin);
     app.run();
 }
