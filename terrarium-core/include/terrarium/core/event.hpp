@@ -7,6 +7,8 @@
 
 #include <concepts>
 #include <functional>
+#include <queue>
+#include <thread>
 #include <typeindex>
 #include <type_traits>
 #include <unordered_map>
@@ -17,7 +19,7 @@ namespace terra::core {
     struct TERRA_CORE_API IEvent {};
 
     template<typename T>
-    struct is_event : std::is_base_of<IEvent, std::remove_cvref_t<T>> {};
+    struct is_event : std::is_base_of<IEvent, std::decay_t<T>> {};
 
     template<typename T>
     constexpr bool is_event_v = is_event<T>::value;
@@ -30,7 +32,7 @@ namespace terra::core {
         using Listener = std::move_only_function<void(const E&)>;
 
     public:
-        EventBus() noexcept = default;
+        EventBus() noexcept;
         EventBus(EventBus&&) noexcept = delete;
         EventBus(const EventBus&) = delete;
 
@@ -43,19 +45,38 @@ namespace terra::core {
         }
 
         auto dispatch(Event auto&& event) -> void {
-            dispatch_immediate(event);
+            thread_local const auto thread_id = std::this_thread::get_id();
+            if(thread_id == m_main_thread_id) {
+                dispatch_immediate(event);
+
+                return;
+            }
+
+            auto deferred_dispatches = m_deferred_dispatches.lock();
+            deferred_dispatches->emplace(
+                [this, event = std::forward<decltype(event)>(event)]() mutable -> void {
+                    dispatch_immediate(event);
+                }
+            );
         }
+
+        auto process_queue() -> void;
 
     private:
         std::unordered_map<std::type_index, UniqueAny> m_listeners{};
 
+        std::thread::id m_main_thread_id;
+        Mutex<std::queue<std::move_only_function<void()>>> m_deferred_dispatches{};
+
         auto dispatch_immediate(const Event auto& event) -> void {
-            const auto it = m_listeners.find(typeid(event));
+            using E = std::decay_t<decltype(event)>;
+
+            const auto it = m_listeners.find(typeid(E));
             if(it == m_listeners.end()) {
                 return;
             }
 
-            auto& listeners = *static_cast<std::vector<Listener<decltype(event)>>*>(it->second.get());
+            auto& listeners = *static_cast<std::vector<Listener<E>>*>(it->second.get());
             for(auto& listener : listeners) {
                 listener(event);
             }

@@ -57,6 +57,8 @@ namespace terra::core {
                 }
             }
 
+            m_event_bus.process_queue();
+
             if(!m_running.load(std::memory_order::acquire)) {
                 break;
             }
