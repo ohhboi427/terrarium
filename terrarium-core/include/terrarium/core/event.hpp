@@ -19,7 +19,7 @@ namespace terra::core {
     struct TERRA_CORE_API IEvent {};
 
     template<typename T>
-    struct is_event : std::is_base_of<IEvent, std::decay_t<T>> {};
+    struct is_event : std::is_base_of<IEvent, T> {};
 
     template<typename T>
     constexpr bool is_event_v = is_event<T>::value;
@@ -29,6 +29,7 @@ namespace terra::core {
 
     class TERRA_CORE_API EventBus {
         template<Event E>
+            requires std2::is_clean_type_v<E>
         using Listener = std::move_only_function<void(const E&)>;
 
     public:
@@ -37,10 +38,14 @@ namespace terra::core {
         EventBus(const EventBus&) = delete;
 
         template<Event E>
+            requires std2::is_clean_type_v<E>
         auto register_listener(std::invocable<const E&> auto&& listener) -> void {
-            auto [it, is_new] = m_listeners.try_emplace(typeid(E), make_unique_any<std::vector<Listener<E>>>());
-            auto& listeners = *static_cast<std::vector<Listener<E>>*>(it->second.get());
+            auto [it, is_new] = m_listeners.try_emplace(
+                typeid(E),
+                make_unique_any<std::vector<Listener<E>>>()
+            );
 
+            auto& listeners = *static_cast<std::vector<Listener<E>>*>(it->second.get());
             listeners.emplace_back(std::forward<decltype(listener)>(listener));
         }
 
@@ -69,14 +74,14 @@ namespace terra::core {
         Mutex<std::queue<std::move_only_function<void()>>> m_deferred_dispatches{};
 
         auto dispatch_immediate(const Event auto& event) -> void {
-            using E = std::decay_t<decltype(event)>;
+            using EventType = std::remove_cvref_t<decltype(event)>;
 
-            const auto it = m_listeners.find(typeid(E));
+            const auto it = m_listeners.find(typeid(EventType));
             if(it == m_listeners.end()) {
                 return;
             }
 
-            auto& listeners = *static_cast<std::vector<Listener<E>>*>(it->second.get());
+            auto& listeners = *static_cast<std::vector<Listener<EventType>>*>(it->second.get());
             for(auto& listener : listeners) {
                 listener(event);
             }

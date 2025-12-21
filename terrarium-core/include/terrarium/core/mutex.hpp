@@ -1,5 +1,7 @@
 #pragma once
 
+#include <terrarium/core/base.hpp>
+
 #include <mutex>
 #include <shared_mutex>
 #include <type_traits>
@@ -33,10 +35,13 @@ namespace terra::core {
     concept SharedLockable = is_shared_lockable_v<T>;
 
     template<typename T, Lockable M = std::mutex, Lockable L = std::unique_lock<M>>
-        requires std::is_constructible_v<L, M&>
+        requires std::conjunction_v<
+            std::is_constructible<L, M&>,
+            std::negation<std::is_reference<T>>
+        >
     class LockGuard {
         template<typename T_, Lockable>
-            requires std::negation_v<std::is_const<T_>>
+            requires std2::is_clean_type_v<T_>
         friend class Mutex;
 
     public:
@@ -75,7 +80,7 @@ namespace terra::core {
     using SharedLockGuard = LockGuard<const T, M, std::shared_lock<M>>;
 
     template<typename T, Lockable M = std::mutex>
-        requires std::negation_v<std::is_const<T>>
+        requires std2::is_clean_type_v<T>
     class Mutex {
     public:
         using Inner = M;

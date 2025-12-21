@@ -25,13 +25,22 @@
 namespace std2 {
     template<typename T, typename R, typename... Args>
     concept invocable_r = std::is_invocable_r_v<R, T, Args...>;
+
+    template<typename T>
+    struct is_clean_type : std::conjunction<
+            std::negation<std::is_reference<T>>,
+            std::negation<std::is_const<T>>
+        > {};
+
+    template<typename T>
+    constexpr bool is_clean_type_v = is_clean_type<T>::value;
 }
 
 namespace terra {
     using UniqueAny = std::unique_ptr<void, void(*)(void*)>;
 
     template<typename T, typename... Args>
-        requires std::is_constructible_v<T, Args...>
+        requires std::conjunction_v<std::is_constructible<T, Args...>, std2::is_clean_type<T>>
     [[nodiscard]] constexpr auto make_unique_any(Args&&... args) -> UniqueAny {
         return {
             new T(std::forward<Args>(args)...),
