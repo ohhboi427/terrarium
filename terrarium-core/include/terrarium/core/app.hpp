@@ -7,8 +7,8 @@
 #include <terrarium/core/ecs/world.hpp>
 
 #include <atomic>
+#include <concepts>
 #include <functional>
-#include <type_traits>
 #include <utility>
 
 namespace terra::core {

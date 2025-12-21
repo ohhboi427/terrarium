@@ -4,6 +4,7 @@
 #include <terrarium/core/mutex.hpp>
 #include <terrarium/core/ecs/resource.hpp>
 
+#include <concepts>
 #include <condition_variable>
 #include <functional>
 #include <future>
@@ -11,7 +12,6 @@
 #include <queue>
 #include <stop_token>
 #include <thread>
-#include <type_traits>
 #include <utility>
 #include <vector>
 

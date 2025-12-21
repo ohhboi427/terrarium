@@ -5,6 +5,7 @@
 #include <terrarium/core/ecs/resource.hpp>
 #include <terrarium/core/ecs/world.hpp>
 
+#include <concepts>
 #include <functional>
 #include <typeindex>
 #include <type_traits>
