@@ -152,7 +152,7 @@ namespace terra::core {
         }
 
     protected:
-        SharedLockGuard<Inner, typename SharedMutex<Inner>::Inner> m_object;
+        SharedLockGuard<Inner> m_object;
     };
 
     template<Resource R>

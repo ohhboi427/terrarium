@@ -60,22 +60,4 @@ namespace terra::core {
 
         auto enqueue(Task&& task) -> void;
     };
-
-    class TERRA_CORE_API TaskPoolView : IResource {
-    public:
-        explicit TaskPoolView(TaskPool& pool) noexcept;
-
-        template<std2::invocable_r<void, std::pmr::memory_resource&> F>
-        auto post(F&& function) -> void {
-            m_pool.post(std::forward<F>(function));
-        }
-
-        template<std::invocable<std::pmr::memory_resource&> F>
-        [[nodiscard]] auto submit(F&& function) -> std::future<TaskPool::TaskResult<F>> {
-            return m_pool.submit(std::forward<F>(function));
-        }
-
-    private:
-        TaskPool& m_pool;
-    };
 }
