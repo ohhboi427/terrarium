@@ -1,7 +1,6 @@
 #pragma once
 
 #include <terrarium/core/base.hpp>
-#include <terrarium/core/mutex.hpp>
 #include <terrarium/core/debug/assert.hpp>
 #include <terrarium/core/ecs/extractor.hpp>
 #include <terrarium/core/ecs/resource.hpp>
@@ -33,7 +32,7 @@ namespace terra::core {
 
             m_resources.try_emplace(
                 typeid(Inner),
-                make_unique_any<SharedMutex<Inner>>(std::forward<Args>(args)...)
+                make_unique_any<Inner>(std::forward<Args>(args)...)
             );
         }
 
@@ -49,11 +48,10 @@ namespace terra::core {
             const auto it = self.m_resources.find(typeid(Inner));
             TERRA_DEBUG_ASSERT(it != self.m_resources.end(), "Resource '{}' not found", typeid(Inner).name());
 
-            using MutexType = SharedMutex<Inner>;
             using ReturnType = std::conditional_t<
                 std::is_const_v<std::remove_reference_t<decltype(self)>>,
-                std::add_pointer_t<const MutexType>,
-                std::add_pointer_t<MutexType>
+                std::add_pointer_t<const Inner>,
+                std::add_pointer_t<Inner>
             >;
 
             return *static_cast<ReturnType>(it->second.get());
@@ -69,77 +67,19 @@ namespace terra::core {
     template<Resource R>
     class Res<R> {
     public:
-        explicit Res(World& world)
-            : m_object{ world.get_resource<R>().lock() } {}
+        explicit Res(World& world) noexcept
+            : m_object{ world.get_resource<std::remove_cvref_t<R>>() } {}
 
         [[nodiscard]] auto operator*() const noexcept -> R& {
-            return m_object.operator*();
+            return m_object;
         }
 
-        [[nodiscard]] auto operator->() const noexcept -> R* {
-            return m_object.operator->();
-        }
-
-    protected:
-        LockGuard<R, typename SharedMutex<R>::Inner> m_object;
-    };
-
-    template<Resource R>
-    class Res<const R> {
-    public:
-        explicit Res(const World& world)
-            : m_object{ world.get_resource<R>().shared_lock() } {}
-
-        [[nodiscard]] auto operator*() const noexcept -> const R& {
-            return m_object.operator*();
-        }
-
-        [[nodiscard]] auto operator->() const noexcept -> const R* {
-            return m_object.operator->();
+        [[nodiscard]] auto operator->() const noexcept -> std::remove_reference_t<R>* {
+            return &m_object;
         }
 
     protected:
-        SharedLockGuard<R> m_object;
-    };
-
-    template<Resource R>
-    class Res<R&> {
-        using Inner = std::reference_wrapper<R>;
-
-    public:
-        explicit Res(World& world)
-            : m_object{ world.get_resource<R&>().lock() } {}
-
-        [[nodiscard]] auto operator*() const noexcept -> R& {
-            return m_object->get();
-        }
-
-        [[nodiscard]] auto operator->() const noexcept -> R* {
-            return &m_object->get();
-        }
-
-    protected:
-        LockGuard<Inner, typename SharedMutex<Inner>::Inner> m_object;
-    };
-
-    template<Resource R>
-    class Res<const R&> {
-        using Inner = std::reference_wrapper<R>;
-
-    public:
-        explicit Res(const World& world)
-            : m_object{ world.get_resource<R&>().shared_lock() } {}
-
-        [[nodiscard]] auto operator*() const noexcept -> const R& {
-            return m_object->get();
-        }
-
-        [[nodiscard]] auto operator->() const noexcept -> const R* {
-            return &m_object->get();
-        }
-
-    protected:
-        SharedLockGuard<Inner> m_object;
+        R& m_object;
     };
 
     template<Resource R>
