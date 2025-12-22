@@ -30,7 +30,7 @@ namespace terra::core {
     class TERRA_CORE_API EventBus {
         template<Event E>
             requires std2::is_clean_type_v<E>
-        using Listener = std::move_only_function<void(const E&)>;
+        using Listener = std::move_only_function<bool(const E&)>;
 
     public:
         EventBus() noexcept;
@@ -83,7 +83,10 @@ namespace terra::core {
 
             auto& listeners = *static_cast<std::vector<Listener<EventType>>*>(it->second.get());
             for(auto& listener : listeners) {
-                listener(event);
+                const auto handled = listener(event);
+                if(handled) {
+                    break;
+                }
             }
         }
     };

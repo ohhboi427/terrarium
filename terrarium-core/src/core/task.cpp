@@ -65,7 +65,4 @@ namespace terra::core {
 
         m_tasks_notifier.notify_one();
     }
-
-    TaskPoolView::TaskPoolView(TaskPool& pool) noexcept
-        : m_pool{ pool } {}
 }

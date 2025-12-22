@@ -17,7 +17,7 @@ namespace terra::core {
     class TERRA_CORE_API App {
         template<Event E, Extractor... Es>
             requires std2::is_clean_type_v<E>
-        using Listener = void(*)(const E&, Es...);
+        using Listener = bool(*)(const E&, Es...);
 
     public:
         auto run() -> void;

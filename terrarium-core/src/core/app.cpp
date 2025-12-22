@@ -20,8 +20,10 @@ namespace terra::core {
 
         m_world.make_resource<EventDispatcher>(m_event_bus);
         m_event_bus.register_listener<AppQuitEvent>(
-            [this](const AppQuitEvent&) noexcept -> void {
+            [this](const AppQuitEvent&) noexcept -> bool {
                 m_running.store(false, std::memory_order::release);
+
+                return true;
             }
         );
 
