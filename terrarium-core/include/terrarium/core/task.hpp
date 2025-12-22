@@ -16,7 +16,7 @@
 #include <vector>
 
 namespace terra::core {
-    class TERRA_CORE_API TaskPool {
+    class TERRA_CORE_API TaskPool : IResource {
         friend class TaskPoolView;
 
         using Task = std::move_only_function<void(std::pmr::memory_resource&)>;

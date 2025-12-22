@@ -19,21 +19,36 @@ namespace terra::core {
         World(const World&) = delete;
 
         template<Resource R, typename... Args>
-            requires std::conjunction_v<std::is_constructible<R, Args...>, std2::is_clean_type<R>>
+            requires std::conjunction_v<
+                std::is_constructible<R, Args...>,
+                std::negation<std::is_const<std::remove_reference_t<R>>>
+            >
         auto make_resource(Args&&... args) -> void {
+            using Inner = std::conditional_t<
+                std::is_reference_v<R>,
+                std::reference_wrapper<std::remove_reference_t<R>>,
+                R
+            >;
+
             m_resources.try_emplace(
-                typeid(R),
-                make_unique_any<SharedMutex<R>>(std::forward<Args>(args)...)
+                typeid(Inner),
+                make_unique_any<SharedMutex<Inner>>(std::forward<Args>(args)...)
             );
         }
 
         template<Resource R>
-            requires std2::is_clean_type_v<R>
+            requires std::negation_v<std::is_const<std::remove_reference_t<R>>>
         [[nodiscard]] decltype(auto) get_resource(this auto&& self) noexcept {
-            const auto it = self.m_resources.find(typeid(R));
-            TERRA_DEBUG_ASSERT(it != self.m_resources.end(), "Resource '{}' not found", typeid(R).name());
+            using Inner = std::conditional_t<
+                std::is_reference_v<R>,
+                std::reference_wrapper<std::remove_reference_t<R>>,
+                R
+            >;
 
-            using MutexType = SharedMutex<R>;
+            const auto it = self.m_resources.find(typeid(Inner));
+            TERRA_DEBUG_ASSERT(it != self.m_resources.end(), "Resource '{}' not found", typeid(Inner).name());
+
+            using MutexType = SharedMutex<Inner>;
             using ReturnType = std::conditional_t<
                 std::is_const_v<std::remove_reference_t<decltype(self)>>,
                 std::add_pointer_t<const MutexType>,
@@ -61,9 +76,11 @@ namespace terra::core {
     template<typename T>
     concept Extractor = is_extractor_v<T>;
 
+    template<typename>
+    class Res;
+
     template<Resource R>
-        requires std::negation_v<std::is_reference<R>>
-    class Res {
+    class Res<R> {
     public:
         explicit Res(World& world)
             : m_object{ world.get_resource<R>().lock() } {}
@@ -76,12 +93,11 @@ namespace terra::core {
             return m_object.operator->();
         }
 
-    private:
+    protected:
         LockGuard<R, typename SharedMutex<R>::Inner> m_object;
     };
 
     template<Resource R>
-        requires std::negation_v<std::is_reference<R>>
     class Res<const R> {
     public:
         explicit Res(const World& world)
@@ -95,8 +111,48 @@ namespace terra::core {
             return m_object.operator->();
         }
 
-    private:
+    protected:
         SharedLockGuard<R> m_object;
+    };
+
+    template<Resource R>
+    class Res<R&> {
+        using Inner = std::reference_wrapper<R>;
+
+    public:
+        explicit Res(World& world)
+            : m_object{ world.get_resource<R&>().lock() } {}
+
+        [[nodiscard]] auto operator*() const noexcept -> R& {
+            return m_object->get();
+        }
+
+        [[nodiscard]] auto operator->() const noexcept -> R* {
+            return &m_object->get();
+        }
+
+    protected:
+        LockGuard<Inner, typename SharedMutex<Inner>::Inner> m_object;
+    };
+
+    template<Resource R>
+    class Res<const R&> {
+        using Inner = std::reference_wrapper<R>;
+
+    public:
+        explicit Res(const World& world)
+            : m_object{ world.get_resource<R&>().shared_lock() } {}
+
+        [[nodiscard]] auto operator*() const noexcept -> const R& {
+            return m_object->get();
+        }
+
+        [[nodiscard]] auto operator->() const noexcept -> const R* {
+            return &m_object->get();
+        }
+
+    protected:
+        SharedLockGuard<Inner, typename SharedMutex<Inner>::Inner> m_object;
     };
 
     template<Resource R>

@@ -26,7 +26,7 @@ namespace terra::core {
         );
 
         TaskPool task_pool{ 8U };
-        m_world.make_resource<TaskPoolView>(task_pool);
+        m_world.make_resource<TaskPool&>(task_pool);
 
         m_schedule.build();
         m_schedule.run(m_world);

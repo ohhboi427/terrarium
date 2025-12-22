@@ -19,7 +19,7 @@ namespace terra::core {
     struct TERRA_CORE_API IEvent {};
 
     template<typename T>
-    struct is_event : std::is_base_of<IEvent, T> {};
+    struct is_event : std::is_base_of<IEvent, std::remove_cvref_t<T>> {};
 
     template<typename T>
     constexpr bool is_event_v = is_event<T>::value;
