@@ -66,18 +66,18 @@ namespace terra::core {
     class Res {
     public:
         explicit Res(World& world)
-            : object{ world.get_resource<R>().lock() } {}
+            : m_object{ world.get_resource<R>().lock() } {}
 
         [[nodiscard]] auto operator*() const noexcept -> R& {
-            return object.operator*();
+            return m_object.operator*();
         }
 
         [[nodiscard]] auto operator->() const noexcept -> R* {
-            return object.operator->();
+            return m_object.operator->();
         }
 
     private:
-        LockGuard<R, typename SharedMutex<R>::Inner> object;
+        LockGuard<R, typename SharedMutex<R>::Inner> m_object;
     };
 
     template<Resource R>
@@ -85,18 +85,18 @@ namespace terra::core {
     class Res<const R> {
     public:
         explicit Res(const World& world)
-            : object{ world.get_resource<R>().shared_lock() } {}
+            : m_object{ world.get_resource<R>().shared_lock() } {}
 
         [[nodiscard]] auto operator*() const noexcept -> const R& {
-            return object.operator*();
+            return m_object.operator*();
         }
 
         [[nodiscard]] auto operator->() const noexcept -> const R* {
-            return object.operator->();
+            return m_object.operator->();
         }
 
     private:
-        SharedLockGuard<R> object;
+        SharedLockGuard<R> m_object;
     };
 
     template<Resource R>
