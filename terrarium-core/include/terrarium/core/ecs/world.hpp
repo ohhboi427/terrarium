@@ -6,6 +6,7 @@
 #include <terrarium/core/ecs/extractor.hpp>
 #include <terrarium/core/ecs/resource.hpp>
 
+#include <functional>
 #include <typeindex>
 #include <type_traits>
 #include <unordered_map>

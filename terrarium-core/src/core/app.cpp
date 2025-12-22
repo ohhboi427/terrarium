@@ -1,6 +1,5 @@
 #include <terrarium/core/app.hpp>
 
-#include <terrarium/core/event.hpp>
 #include <terrarium/core/task.hpp>
 
 #include <core/debug/assert.hpp>
@@ -11,8 +10,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-#include <atomic>
 
 namespace terra::core {
     auto App::run() -> void {

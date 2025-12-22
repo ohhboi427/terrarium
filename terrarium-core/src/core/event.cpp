@@ -1,8 +1,5 @@
 #include <terrarium/core/event.hpp>
 
-#include <thread>
-#include <utility>
-
 namespace terra::core {
     EventBus::EventBus() noexcept
         : m_main_thread_id{ std::this_thread::get_id() } {}

@@ -4,9 +4,6 @@
 
 #include <queue>
 #include <ranges>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
 namespace terra::core {
     auto Schedule::build() -> void {

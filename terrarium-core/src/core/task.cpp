@@ -1,9 +1,6 @@
 #include <terrarium/core/task.hpp>
 
 #include <memory>
-#include <memory_resource>
-#include <stop_token>
-#include <utility>
 
 namespace terra::core {
     TaskPool::TaskPool(const usize num_workers) {

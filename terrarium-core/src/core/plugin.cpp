@@ -1,6 +1,5 @@
 #include <terrarium/core/plugin.hpp>
 
-#include <filesystem>
 #include <utility>
 
 namespace terra::core {

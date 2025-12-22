@@ -2,8 +2,6 @@
 
 #include <terrarium/core/app.hpp>
 
-#include <filesystem>
-
 #include <dlfcn.h>
 
 namespace terra::core {
