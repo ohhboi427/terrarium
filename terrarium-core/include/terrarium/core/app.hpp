@@ -3,6 +3,7 @@
 #include <terrarium/core/base.hpp>
 #include <terrarium/core/event.hpp>
 #include <terrarium/core/plugin.hpp>
+#include <terrarium/core/ecs/extractor.hpp>
 #include <terrarium/core/ecs/system.hpp>
 #include <terrarium/core/ecs/world.hpp>
 
@@ -39,8 +40,8 @@ namespace terra::core {
             requires std2::is_clean_type_v<E>
         auto register_listener(const Listener<E, Es...> listener) -> App& {
             m_event_bus.register_listener<E>(
-                [this, listener](const E& event) -> void {
-                    std::invoke(listener, event, IExtractor<Es>::operator()(m_world)...);
+                [this, listener](const E& event) -> bool {
+                    return std::invoke(listener, event, IExtractor<Es>::operator()(m_world)...);
                 }
             );
 

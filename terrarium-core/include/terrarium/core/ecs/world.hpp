@@ -3,9 +3,9 @@
 #include <terrarium/core/base.hpp>
 #include <terrarium/core/mutex.hpp>
 #include <terrarium/core/debug/assert.hpp>
+#include <terrarium/core/ecs/extractor.hpp>
 #include <terrarium/core/ecs/resource.hpp>
 
-#include <concepts>
 #include <typeindex>
 #include <type_traits>
 #include <unordered_map>
@@ -61,20 +61,6 @@ namespace terra::core {
     private:
         std::unordered_map<std::type_index, UniqueAny> m_resources{};
     };
-
-    template<typename>
-    struct IExtractor;
-
-    template<typename T>
-    struct is_extractor : std::bool_constant<requires(World& world) {
-            { IExtractor<T>::operator()(world) } -> std::same_as<T>;
-        }> {};
-
-    template<typename T>
-    constexpr bool is_extractor_v = is_extractor<T>::value;
-
-    template<typename T>
-    concept Extractor = is_extractor_v<T>;
 
     template<typename>
     class Res;

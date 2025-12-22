@@ -1,7 +1,7 @@
 #pragma once
 
 #include <terrarium/core/base.hpp>
-#include <terrarium/core/ecs/world.hpp>
+#include <terrarium/core/ecs/extractor.hpp>
 
 #include <concepts>
 #include <functional>
@@ -11,6 +11,8 @@
 #include <variant>
 
 namespace terra::core {
+    class World;
+
     template<Extractor... Es>
     using System = void(*)(Es...);
 
