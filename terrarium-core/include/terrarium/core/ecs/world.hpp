@@ -21,7 +21,7 @@ namespace terra::core {
         template<Resource R, typename... Args>
             requires std::conjunction_v<
                 std::is_constructible<R, Args...>,
-                std::negation<std::is_const<std::remove_reference_t<R>>>
+                std2::is_clean_type<std::remove_reference_t<R>>
             >
         auto make_resource(Args&&... args) -> void {
             using Inner = std::conditional_t<
@@ -37,7 +37,7 @@ namespace terra::core {
         }
 
         template<Resource R>
-            requires std::negation_v<std::is_const<std::remove_reference_t<R>>>
+            requires std2::is_clean_type_v<std::remove_reference_t<R>>
         [[nodiscard]] decltype(auto) get_resource(this auto&& self) noexcept {
             using Inner = std::conditional_t<
                 std::is_reference_v<R>,
@@ -66,38 +66,23 @@ namespace terra::core {
 
     template<Resource R>
     class Res<R> {
+        using ReferenceType = std::add_lvalue_reference_t<R>;
+        using PointerType = std::add_pointer_t<R>;
+
     public:
         explicit Res(World& world) noexcept
-            : m_object{ world.get_resource<std::remove_cv_t<R>>() } {}
+            : m_object{ static_cast<ReferenceType>(world.get_resource<std2::remove_ref_cv_t<R>>()) } {}
 
-        [[nodiscard]] auto operator*() const noexcept -> R& {
+        [[nodiscard]] auto operator*() const noexcept -> ReferenceType {
             return m_object;
         }
 
-        [[nodiscard]] auto operator->() const noexcept -> R* {
+        [[nodiscard]] auto operator->() const noexcept -> PointerType {
             return &m_object;
         }
 
     protected:
-        R& m_object;
-    };
-
-    template<Resource R>
-    class Res<R&> {
-    public:
-        explicit Res(World& world) noexcept
-            : m_object{ world.get_resource<std::remove_cv_t<R>&>().get() } {}
-
-        [[nodiscard]] auto operator*() const noexcept -> R& {
-            return m_object;
-        }
-
-        [[nodiscard]] auto operator->() const noexcept -> R* {
-            return &m_object;
-        }
-
-    protected:
-        R& m_object;
+        ReferenceType& m_object;
     };
 
     template<Resource R>

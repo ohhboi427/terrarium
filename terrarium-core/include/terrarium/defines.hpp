@@ -23,17 +23,41 @@
 #include <utility>
 
 namespace std2 {
-    template<typename T, typename R, typename... Args>
-    concept invocable_r = std::is_invocable_r_v<R, T, Args...>;
+    template<typename T>
+    struct remove_ref_const : std::type_identity<T> {};
 
     template<typename T>
-    struct is_clean_type : std::conjunction<
-            std::negation<std::is_reference<T>>,
-            std::negation<std::is_const<T>>
-        > {};
+    struct remove_ref_const<T&> : std::remove_const<T> {};
+
+    template<typename T>
+    using remove_ref_const_t = remove_ref_const<T>::type;
+
+    template<typename T>
+    struct remove_ref_volatile : std::type_identity<T> {};
+
+    template<typename T>
+    struct remove_ref_volatile<T&> : std::remove_volatile<T> {};
+
+    template<typename T>
+    using remove_ref_volatile_t = remove_ref_volatile<T>::type;
+
+    template<typename T>
+    struct remove_ref_cv : std::type_identity<T> {};
+
+    template<typename T>
+    struct remove_ref_cv<T&> : std::remove_cv<T> {};
+
+    template<typename T>
+    using remove_ref_cv_t = remove_ref_cv<T>::type;
+
+    template<typename T>
+    struct is_clean_type : std::is_same<std::remove_cvref_t<T>, T> {};
 
     template<typename T>
     constexpr bool is_clean_type_v = is_clean_type<T>::value;
+
+    template<typename T, typename R, typename... Args>
+    concept invocable_r = std::is_invocable_r_v<R, T, Args...>;
 }
 
 namespace terra {
