@@ -68,13 +68,31 @@ namespace terra::core {
     class Res<R> {
     public:
         explicit Res(World& world) noexcept
-            : m_object{ world.get_resource<std::remove_cvref_t<R>>() } {}
+            : m_object{ world.get_resource<std::remove_cv_t<R>>() } {}
 
         [[nodiscard]] auto operator*() const noexcept -> R& {
             return m_object;
         }
 
-        [[nodiscard]] auto operator->() const noexcept -> std::remove_reference_t<R>* {
+        [[nodiscard]] auto operator->() const noexcept -> R* {
+            return &m_object;
+        }
+
+    protected:
+        R& m_object;
+    };
+
+    template<Resource R>
+    class Res<R&> {
+    public:
+        explicit Res(World& world) noexcept
+            : m_object{ world.get_resource<std::remove_cv_t<R>&>().get() } {}
+
+        [[nodiscard]] auto operator*() const noexcept -> R& {
+            return m_object;
+        }
+
+        [[nodiscard]] auto operator->() const noexcept -> R* {
             return &m_object;
         }
 
