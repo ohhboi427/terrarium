@@ -14,8 +14,6 @@
 #include <utility>
 
 namespace terra::core {
-    class World;
-
     class TERRA_CORE_API World {
         friend class Commands;
 

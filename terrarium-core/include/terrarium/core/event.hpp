@@ -30,6 +30,7 @@ namespace terra::core {
         template<Event E>
             requires std2::is_clean_type_v<E>
         using Listener = std::move_only_function<bool(const E&)>;
+        using DeferredDispatch = std::move_only_function<void()>;
 
     public:
         EventBus() noexcept;
@@ -70,7 +71,7 @@ namespace terra::core {
         std::unordered_map<std::type_index, UniqueAny> m_listeners{};
 
         std::thread::id m_main_thread_id;
-        Mutex<std::queue<std::move_only_function<void()>>> m_deferred_dispatches{};
+        Mutex<std::queue<DeferredDispatch>> m_deferred_dispatches{};
 
         auto dispatch_immediate(const Event auto& event) -> void {
             using EventType = std::remove_cvref_t<decltype(event)>;

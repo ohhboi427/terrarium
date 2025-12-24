@@ -79,7 +79,7 @@ namespace terra {
         requires std::conjunction_v<std::is_constructible<T, Args...>, std2::is_clean_type<T>>
     [[nodiscard]] constexpr auto make_unique_any(Args&&... args) -> UniqueAny {
         return {
-            new T(std::forward<Args>(args)...),
+            new T{ std::forward<Args>(args)...},
             [](void* const ptr) noexcept -> void {
                 delete static_cast<T*>(ptr);
             }

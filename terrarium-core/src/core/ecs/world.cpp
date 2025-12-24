@@ -6,10 +6,15 @@ namespace terra::core {
     }
 
     auto World::CommandQueue::flush(World& world) -> void {
-        auto commands = m_commands.lock();
-        while(!commands->empty()) {
-            auto command = std::move(commands->front());
-            commands->pop();
+        std::queue<Command> commands{};
+
+        {
+            commands.swap(*m_commands.lock());
+        }
+
+        while(!commands.empty()) {
+            auto command = std::move(commands.front());
+            commands.pop();
 
             command(world);
         }
