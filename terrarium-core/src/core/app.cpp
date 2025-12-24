@@ -63,13 +63,13 @@ namespace terra::core {
                 }
             }
 
-            m_event_bus.process_queue();
+            m_event_bus.flush();
 
             if(!m_running.load(std::memory_order::acquire)) {
                 break;
             }
 
-            m_world.process_queue();
+            m_world.flush();
             run_schedule<UpdateTag>();
 
             static constexpr glm::vec4 CLEAR_COLOR{ 1.0F, 0.0F, 1.0F, 1.0F };

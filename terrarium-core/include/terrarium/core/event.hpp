@@ -64,7 +64,7 @@ namespace terra::core {
             );
         }
 
-        auto process_queue() -> void;
+        auto flush() -> void;
 
     private:
         std::unordered_map<std::type_index, UniqueAny> m_listeners{};

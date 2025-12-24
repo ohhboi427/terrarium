@@ -1,11 +1,11 @@
 #include <terrarium/core/ecs/world.hpp>
 
 namespace terra::core {
-    auto World::process_queue() -> void {
-        m_queue.process_queue(*this);
+    auto World::flush() -> void {
+        m_queue.flush(*this);
     }
 
-    auto World::CommandQueue::process_queue(World& world) -> void {
+    auto World::CommandQueue::flush(World& world) -> void {
         auto commands = m_commands.lock();
         while(!commands->empty()) {
             auto command = std::move(commands->front());

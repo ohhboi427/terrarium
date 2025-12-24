@@ -19,7 +19,7 @@ namespace terra::core {
     class TERRA_CORE_API World {
         friend class Commands;
 
-        class TERRA_CORE_API CommandQueue {
+        class CommandQueue {
             using Command = std::move_only_function<void(World&)>;
 
         public:
@@ -35,7 +35,7 @@ namespace terra::core {
                 >
             auto make_resource(Args&&... args) -> void;
 
-            auto process_queue(World& world) -> void;
+            auto flush(World& world) -> void;
 
         private:
             Mutex<std::queue<Command>> m_commands{};
@@ -85,7 +85,7 @@ namespace terra::core {
             return *static_cast<ReturnType>(it->second.get());
         }
 
-        auto process_queue() -> void;
+        auto flush() -> void;
 
     private:
         CommandQueue m_queue;
