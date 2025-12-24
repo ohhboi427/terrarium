@@ -11,6 +11,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <ranges>
+
 namespace terra::core {
     auto App::run() -> void {
         register_crash_handler();
@@ -27,8 +29,9 @@ namespace terra::core {
         TaskPool task_pool{ 8U };
         m_world.make_resource<TaskPool&>(task_pool);
 
-        m_schedule.build();
-        m_schedule.run(m_world);
+        for(auto& schedule : m_schedules | std::views::values) {
+            schedule.build();
+        }
 
         SDL_Init(SDL_INIT_VIDEO);
 
@@ -42,6 +45,10 @@ namespace terra::core {
         SDL_GL_MakeCurrent(window, context);
 
         gladLoadGL(SDL_GL_GetProcAddress);
+
+        m_running.store(true, std::memory_order::release);
+
+        run_schedule<StartupTag>();
 
         while(true) {
             SDL_Event event{};
@@ -62,11 +69,15 @@ namespace terra::core {
                 break;
             }
 
+            run_schedule<UpdateTag>();
+
             static constexpr glm::vec4 CLEAR_COLOR{ 1.0F, 0.0F, 1.0F, 1.0F };
             glClearNamedFramebufferfv(0U, GL_COLOR, 0U, glm::value_ptr(CLEAR_COLOR));
 
             SDL_GL_SwapWindow(window);
         }
+
+        run_schedule<ShutdownTag>();
 
         SDL_Quit();
     }

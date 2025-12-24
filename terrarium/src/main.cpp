@@ -18,7 +18,7 @@ auto hello_world(const Res<TaskPool&> pool) -> void {
 }
 
 auto terrarium_plugin(App& app) noexcept -> void {
-    app.add_system(hello_world);
+    app.add_system<UpdateTag>(hello_world);
 }
 
 auto main() -> i32 {

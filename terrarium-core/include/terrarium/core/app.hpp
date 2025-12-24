@@ -3,16 +3,26 @@
 #include <terrarium/core/base.hpp>
 #include <terrarium/core/event.hpp>
 #include <terrarium/core/plugin.hpp>
+#include <terrarium/core/debug/assert.hpp>
 #include <terrarium/core/ecs/extractor.hpp>
 #include <terrarium/core/ecs/system.hpp>
+#include <terrarium/core/ecs/tag.hpp>
 #include <terrarium/core/ecs/world.hpp>
 
 #include <atomic>
 #include <concepts>
 #include <functional>
+#include <typeindex>
+#include <unordered_map>
 #include <utility>
 
 namespace terra::core {
+    struct TERRA_CORE_API StartupTag : ITag {};
+
+    struct TERRA_CORE_API UpdateTag : ITag {};
+
+    struct TERRA_CORE_API ShutdownTag : ITag {};
+
     struct TERRA_CORE_API AppQuitEvent : IEvent {};
 
     class TERRA_CORE_API App {
@@ -29,11 +39,22 @@ namespace terra::core {
             return *this;
         }
 
-        template<Extractor... Es>
+        template<Tag T, Extractor... Es>
+            requires std2::is_clean_type_v<T>
         auto add_system(const System<Es...> system, std::convertible_to<SystemOrdering> auto&&... orderings) -> App& {
-            m_schedule.add_system(system, std::forward<decltype(orderings)>(orderings)...);
+            m_schedules[typeid(T)].add_system(system, std::forward<decltype(orderings)>(orderings)...);
 
             return *this;
+        }
+
+        template<Tag T>
+        auto run_schedule() -> void {
+            const auto it = m_schedules.find(typeid(T));
+            if(it != m_schedules.end()) {
+                return;
+            }
+
+            it->second.run(m_world);
         }
 
         template<Event E, Extractor... Es>
@@ -49,11 +70,11 @@ namespace terra::core {
         }
 
     private:
-        std::atomic<bool> m_running = true;
+        std::atomic<bool> m_running = false;
 
         EventBus m_event_bus{};
 
         World m_world{};
-        Schedule m_schedule{};
+        std::unordered_map<std::type_index, Schedule> m_schedules{};
     };
 }
