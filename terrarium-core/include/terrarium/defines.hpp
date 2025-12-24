@@ -25,7 +25,7 @@
 namespace std2 {
     template<typename T>
     struct remove_ref_const {
-        using type = T;
+        using type = std::remove_const_t<T>;
     };
 
     template<typename T>
@@ -38,7 +38,7 @@ namespace std2 {
 
     template<typename T>
     struct remove_ref_volatile {
-        using type = T;
+        using type = std::remove_volatile_t<T>;
     };
 
     template<typename T>
@@ -51,7 +51,7 @@ namespace std2 {
 
     template<typename T>
     struct remove_ref_cv {
-        using type = T;
+        using type = std::remove_cv_t<T>;
     };
 
     template<typename T>

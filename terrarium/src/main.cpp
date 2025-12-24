@@ -9,16 +9,27 @@
 using namespace terra::primitives;
 using namespace terra::core;
 
-auto hello_world(const Res<TaskPool&> pool) -> void {
+struct Number : IResource {
+    int value;
+};
+
+auto hello_world(const Res<TaskPool&> pool, Commands commands) -> void {
     pool->submit(
         []([[maybe_unused]] std::pmr::memory_resource& scratch) -> void {
             info("Hello, World!");
         }
     ).wait();
+
+    commands.make_resource<Number>(Number{ .value = 42 });
+}
+
+auto number_print(const Res<const Number> number) -> void {
+    info("Number: {}", number->value);
 }
 
 auto terrarium_plugin(App& app) noexcept -> void {
-    app.add_system<UpdateTag>(hello_world);
+    app.add_system<StartupTag>(hello_world);
+    app.add_system<UpdateTag>(number_print);
 }
 
 auto main() -> i32 {

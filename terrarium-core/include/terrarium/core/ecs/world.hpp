@@ -1,18 +1,46 @@
 #pragma once
 
 #include <terrarium/core/base.hpp>
+#include <terrarium/core/mutex.hpp>
 #include <terrarium/core/debug/assert.hpp>
 #include <terrarium/core/ecs/extractor.hpp>
 #include <terrarium/core/ecs/resource.hpp>
 
 #include <functional>
+#include <queue>
 #include <typeindex>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
 
 namespace terra::core {
+    class World;
+
     class TERRA_CORE_API World {
+        friend class Commands;
+
+        class TERRA_CORE_API CommandQueue {
+            using Command = std::move_only_function<void(World&)>;
+
+        public:
+            explicit CommandQueue() noexcept = default;
+
+            CommandQueue(CommandQueue&&) noexcept = delete;
+            CommandQueue(const CommandQueue&) = delete;
+
+            template<Resource R, typename... Args>
+                requires std::conjunction_v<
+                    std::is_constructible<R, Args...>,
+                    std2::is_clean_type<std::remove_reference_t<R>>
+                >
+            auto make_resource(Args&&... args) -> void;
+
+            auto process_queue(World& world) -> void;
+
+        private:
+            Mutex<std::queue<Command>> m_commands{};
+        };
+
     public:
         World() = default;
         World(World&&) noexcept = delete;
@@ -57,8 +85,45 @@ namespace terra::core {
             return *static_cast<ReturnType>(it->second.get());
         }
 
+        auto process_queue() -> void;
+
     private:
+        CommandQueue m_queue;
+
         std::unordered_map<std::type_index, UniqueAny> m_resources{};
+    };
+
+    template<Resource R, typename... Args>
+        requires std::conjunction_v<std::is_constructible<R, Args...>, std2::is_clean_type<std::remove_reference_t<R>>>
+    auto World::CommandQueue::make_resource(Args&&... args) -> void {
+        auto commands = m_commands.lock();
+        commands->emplace(
+            [...args = std::forward<Args>(args)](World& world) mutable -> void {
+                world.make_resource<R>(std::move(args)...);
+            }
+        );
+    }
+
+    class TERRA_CORE_API Commands {
+    public:
+        explicit Commands(World& world) noexcept;
+
+        template<Resource R, typename... Args>
+            requires std::conjunction_v<
+                std::is_constructible<R, Args...>,
+                std2::is_clean_type<std::remove_reference_t<R>>
+            >
+        auto make_resource(Args&&... args) -> void {
+            m_queue.make_resource<R>(std::forward<Args>(args)...);
+        }
+
+    private:
+        World::CommandQueue& m_queue;
+    };
+
+    template<>
+    struct TERRA_CORE_API IExtractor<Commands> {
+        [[nodiscard]] static auto operator()(World& world) noexcept -> Commands;
     };
 
     template<typename>

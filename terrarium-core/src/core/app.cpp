@@ -69,6 +69,7 @@ namespace terra::core {
                 break;
             }
 
+            m_world.process_queue();
             run_schedule<UpdateTag>();
 
             static constexpr glm::vec4 CLEAR_COLOR{ 1.0F, 0.0F, 1.0F, 1.0F };

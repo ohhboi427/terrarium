@@ -50,7 +50,7 @@ namespace terra::core {
         template<Tag T>
         auto run_schedule() -> void {
             const auto it = m_schedules.find(typeid(T));
-            if(it != m_schedules.end()) {
+            if(it == m_schedules.end()) {
                 return;
             }
 
