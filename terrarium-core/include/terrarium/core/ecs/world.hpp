@@ -92,7 +92,10 @@ namespace terra::core {
     };
 
     template<Resource R, typename... Args>
-        requires std::conjunction_v<std::is_constructible<R, Args...>, std2::is_clean_type<std::remove_reference_t<R>>>
+        requires std::conjunction_v<
+            std::is_constructible<R, Args...>,
+            std2::is_clean_type<std::remove_reference_t<R>>
+        >
     auto World::CommandQueue::make_resource(Args&&... args) -> void {
         auto commands = m_commands.lock();
         commands->emplace(

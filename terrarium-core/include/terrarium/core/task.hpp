@@ -17,10 +17,10 @@
 
 namespace terra::core {
     class TERRA_CORE_API TaskPool : IResource {
-        using Task = std::move_only_function<void(std::pmr::memory_resource&)>;
+        using TaskFunction = std::move_only_function<void(std::pmr::memory_resource&)>;
 
-        template<std::invocable<std::pmr::memory_resource&> F>
-        using TaskResult = std::invoke_result_t<F, std::pmr::memory_resource&>;
+        template<std::invocable<std::pmr::memory_resource&> T>
+        using TaskResult = std::invoke_result_t<T, std::pmr::memory_resource&>;
 
     public:
         explicit TaskPool(usize num_workers);
@@ -29,18 +29,18 @@ namespace terra::core {
         TaskPool(TaskPool&&) noexcept = delete;
         TaskPool(const TaskPool&) = delete;
 
-        template<std2::invocable_r<void, std::pmr::memory_resource&> F>
-        auto post(F&& function) -> void {
-            enqueue(std::forward<F>(function));
+        auto post(std::invocable<std::pmr::memory_resource&> auto&& task) -> void {
+            enqueue(std::forward<decltype(task)>(task));
         }
 
-        template<std::invocable<std::pmr::memory_resource&> F>
-        [[nodiscard]] auto submit(F&& function) -> std::future<TaskResult<F>> {
-            std::packaged_task task{ std::forward<F>(function) };
-            auto future = task.get_future();
+        [[nodiscard]] auto submit(
+            std::invocable<std::pmr::memory_resource&> auto&& task
+        ) -> std::future<TaskResult<decltype(task)>> {
+            std::packaged_task packaged_task{ std::forward<decltype(task)>(task) };
+            auto future = packaged_task.get_future();
 
             enqueue(
-                [task = std::move(task)](std::pmr::memory_resource& scratch) mutable -> void {
+                [task = std::move(packaged_task)](std::pmr::memory_resource& scratch) mutable -> void {
                     std::invoke(task, scratch);
                 }
             );
@@ -51,11 +51,11 @@ namespace terra::core {
     private:
         std::vector<std::jthread> m_workers{};
 
-        Mutex<std::queue<Task>> m_tasks{};
+        Mutex<std::queue<TaskFunction>> m_tasks{};
         std::condition_variable_any m_tasks_notifier{};
 
         auto worker_loop(std::stop_token&& token) -> void;
 
-        auto enqueue(Task&& task) -> void;
+        auto enqueue(TaskFunction&& task) -> void;
     };
 }

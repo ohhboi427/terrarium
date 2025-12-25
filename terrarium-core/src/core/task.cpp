@@ -29,7 +29,7 @@ namespace terra::core {
         };
 
         while(true) {
-            Task task{};
+            TaskFunction task{};
 
             {
                 auto tasks = m_tasks.lock();
@@ -54,7 +54,7 @@ namespace terra::core {
         }
     }
 
-    auto TaskPool::enqueue(Task&& task) -> void {
+    auto TaskPool::enqueue(TaskFunction&& task) -> void {
         {
             auto tasks = m_tasks.lock();
             tasks->push(std::move(task));

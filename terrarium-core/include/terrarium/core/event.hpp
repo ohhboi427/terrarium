@@ -2,6 +2,7 @@
 
 #include <terrarium/core/base.hpp>
 #include <terrarium/core/mutex.hpp>
+#include <terrarium/core/ecs/extractor.hpp>
 #include <terrarium/core/ecs/resource.hpp>
 
 #include <concepts>
@@ -26,10 +27,14 @@ namespace terra::core {
     template<typename T>
     concept Event = is_event_v<T>;
 
+    template<Event E, Extractor... Es>
+        requires std2::is_clean_type_v<E>
+    using Listener = bool(*)(const E&, Es...);
+
     class TERRA_CORE_API EventBus {
         template<Event E>
             requires std2::is_clean_type_v<E>
-        using Listener = std::move_only_function<bool(const E&)>;
+        using ListenerFunction = std::move_only_function<bool(const E&)>;
         using DeferredDispatch = std::move_only_function<void()>;
 
     public:
@@ -42,10 +47,10 @@ namespace terra::core {
         auto register_listener(std::invocable<const E&> auto&& listener) -> void {
             auto [it, is_new] = m_listeners.try_emplace(
                 typeid(E),
-                make_unique_any<std::vector<Listener<E>>>()
+                make_unique_any<std::vector<ListenerFunction<E>>>()
             );
 
-            auto& listeners = *static_cast<std::vector<Listener<E>>*>(it->second.get());
+            auto& listeners = *static_cast<std::vector<ListenerFunction<E>>*>(it->second.get());
             listeners.emplace_back(std::forward<decltype(listener)>(listener));
         }
 
@@ -81,7 +86,7 @@ namespace terra::core {
                 return;
             }
 
-            auto& listeners = *static_cast<std::vector<Listener<EventType>>*>(it->second.get());
+            auto& listeners = *static_cast<std::vector<ListenerFunction<EventType>>*>(it->second.get());
             for(auto& listener : listeners) {
                 const auto handled = listener(event);
                 if(handled) {

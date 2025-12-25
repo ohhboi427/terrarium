@@ -4,10 +4,8 @@
 #include <terrarium/core/debug/log.hpp>
 #include <terrarium/core/ecs/world.hpp>
 
-#include <memory_resource>
-
-using namespace terra::primitives;
 using namespace terra::core;
+using namespace terra::primitives;
 
 struct Number : IResource {
     int value;

@@ -3,7 +3,6 @@
 #include <terrarium/core/base.hpp>
 #include <terrarium/core/event.hpp>
 #include <terrarium/core/plugin.hpp>
-#include <terrarium/core/debug/assert.hpp>
 #include <terrarium/core/ecs/extractor.hpp>
 #include <terrarium/core/ecs/system.hpp>
 #include <terrarium/core/ecs/tag.hpp>
@@ -26,10 +25,6 @@ namespace terra::core {
     struct TERRA_CORE_API AppQuitEvent : IEvent {};
 
     class TERRA_CORE_API App {
-        template<Event E, Extractor... Es>
-            requires std2::is_clean_type_v<E>
-        using Listener = bool(*)(const E&, Es...);
-
     public:
         auto run() -> void;
 
