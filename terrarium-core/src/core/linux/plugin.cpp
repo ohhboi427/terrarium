@@ -16,7 +16,7 @@ namespace terra::core {
         }
 
         using PluginFunc = void(*)(App&);
-        if(const auto func = reinterpret_cast<PluginFunc>(dlsym(handle, "terra_plugin")); func) {
+        if(const auto func = reinterpret_cast<PluginFunc>(dlsym(handle, ENTRY_POINT.data())); func) {
             app.add_plugin(func);
         } else {
             dlclose(handle);

@@ -3,6 +3,7 @@
 #include <terrarium/core/base.hpp>
 
 #include <filesystem>
+#include <string_view>
 #include <type_traits>
 
 namespace terra::core {
@@ -18,6 +19,8 @@ namespace terra::core {
     concept Plugin = is_plugin_v<T>;
 
     class TERRA_CORE_API PluginLoader {
+        static constexpr std::string_view ENTRY_POINT = "terra_plugin";
+
     public:
         explicit PluginLoader(std::filesystem::path&& discover_path) noexcept;
 
