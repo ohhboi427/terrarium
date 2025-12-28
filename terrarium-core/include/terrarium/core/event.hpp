@@ -3,7 +3,6 @@
 #include <terrarium/core/base.hpp>
 #include <terrarium/core/mutex.hpp>
 #include <terrarium/core/ecs/extractor.hpp>
-#include <terrarium/core/ecs/resource.hpp>
 
 #include <concepts>
 #include <functional>
@@ -94,17 +93,5 @@ namespace terra::core {
                 }
             }
         }
-    };
-
-    class TERRA_CORE_API EventDispatcher : IResource {
-    public:
-        explicit EventDispatcher(EventBus& bus) noexcept;
-
-        auto dispatch(const Event auto& event) -> void {
-            m_bus.dispatch(event);
-        }
-
-    private:
-        EventBus& m_bus;
     };
 }

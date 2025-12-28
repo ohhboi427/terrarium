@@ -11,8 +11,8 @@ struct Number : IResource {
     int value;
 };
 
-auto hello_world(const Res<TaskPool&> pool, Commands commands) -> void {
-    pool->submit(
+auto hello_world(Tasks tasks, Commands commands) -> void {
+    tasks.submit(
         []([[maybe_unused]] std::pmr::memory_resource& scratch) -> void {
             info("Hello, World!");
         }

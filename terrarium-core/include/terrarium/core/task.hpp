@@ -2,7 +2,6 @@
 
 #include <terrarium/core/base.hpp>
 #include <terrarium/core/mutex.hpp>
-#include <terrarium/core/ecs/resource.hpp>
 
 #include <concepts>
 #include <condition_variable>
@@ -16,7 +15,7 @@
 #include <vector>
 
 namespace terra::core {
-    class TERRA_CORE_API TaskPool : IResource {
+    class TERRA_CORE_API TaskPool {
         using TaskFunction = std::move_only_function<void(std::pmr::memory_resource&)>;
 
         template<std::invocable<std::pmr::memory_resource&> T>
@@ -35,7 +34,7 @@ namespace terra::core {
 
         [[nodiscard]] auto submit(
             std::invocable<std::pmr::memory_resource&> auto&& task
-        ) -> std::future<TaskResult<decltype(task)>> {
+        ) -> std::future<std::invoke_result_t<decltype(task), std::pmr::memory_resource&>> {
             std::packaged_task packaged_task{ std::forward<decltype(task)>(task) };
             auto future = packaged_task.get_future();
 

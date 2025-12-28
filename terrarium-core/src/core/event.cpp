@@ -18,7 +18,4 @@ namespace terra::core {
             dispatch();
         }
     }
-
-    EventDispatcher::EventDispatcher(EventBus& bus) noexcept
-        : m_bus{ bus } {}
 }
