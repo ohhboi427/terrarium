@@ -11,6 +11,7 @@
 #include <vector>
 
 namespace terra::core {
+    class App;
     class World;
 
     template<Extractor... Es>
@@ -71,7 +72,7 @@ namespace terra::core {
     };
 
     class TERRA_CORE_API Schedule {
-        using SystemFunction = std::move_only_function<void(World&)>;
+        using SystemFunction = std::move_only_function<void(World&, App&)>;
 
         struct SystemMetadata {
             SystemFunction function;
@@ -88,8 +89,8 @@ namespace terra::core {
             m_systems_metadata.try_emplace(
                 reinterpret_cast<detail::SystemHandle>(system),
                 SystemMetadata{
-                    .function = [system](World& world) noexcept -> void {
-                        std::invoke(system, IExtractor<Es>::operator()(world)...);
+                    .function = [system](World& world, App& app) noexcept -> void {
+                        std::invoke(system, IExtractor<Es>::operator()(world, app)...);
                     },
                     .orderings = { std::forward<decltype(orderings)>(orderings)... }
                 }
@@ -97,7 +98,7 @@ namespace terra::core {
         }
 
         auto build() -> void;
-        auto run(World& world) -> void;
+        auto run(World& world, App& app) -> void;
 
     private:
         std::vector<SystemFunction> m_systems{};

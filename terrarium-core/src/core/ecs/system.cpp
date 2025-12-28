@@ -51,9 +51,9 @@ namespace terra::core {
         TERRA_DEBUG_ASSERT(m_systems.size() == m_systems_metadata.size(), "Cyclic dependency detected");
     }
 
-    auto Schedule::run(World& world) -> void {
+    auto Schedule::run(World& world, App& app) -> void {
         for(auto& system : m_systems) {
-            system(world);
+            system(world, app);
         }
     }
 }

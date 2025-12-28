@@ -23,7 +23,7 @@ namespace terra::core {
     Commands::Commands(World& world) noexcept
         : m_queue{ world.m_queue } {}
 
-    auto IExtractor<Commands>::operator()(World& world) noexcept -> Commands {
+    auto IExtractor<Commands>::operator()(World& world, App&) noexcept -> Commands {
         return Commands{ world };
     }
 }

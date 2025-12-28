@@ -14,6 +14,8 @@
 #include <utility>
 
 namespace terra::core {
+    class App;
+
     class TERRA_CORE_API World {
         friend class Commands;
 
@@ -124,7 +126,7 @@ namespace terra::core {
 
     template<>
     struct TERRA_CORE_API IExtractor<Commands> {
-        [[nodiscard]] static auto operator()(World& world) noexcept -> Commands;
+        [[nodiscard]] static auto operator()(World& world, App&) noexcept -> Commands;
     };
 
     template<typename>
@@ -153,7 +155,7 @@ namespace terra::core {
 
     template<Resource R>
     struct IExtractor<Res<R>> {
-        [[nodiscard]] static auto operator()(World& world) -> Res<R> {
+        [[nodiscard]] static auto operator()(World& world, App&) -> Res<R> {
             return Res<R>{ world };
         }
     };

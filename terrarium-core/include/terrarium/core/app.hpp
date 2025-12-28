@@ -49,7 +49,7 @@ namespace terra::core {
                 return;
             }
 
-            it->second.run(m_world);
+            it->second.run(m_world, *this);
         }
 
         template<Event E, Extractor... Es>
@@ -57,7 +57,7 @@ namespace terra::core {
         auto register_listener(const Listener<E, Es...> listener) -> App& {
             m_event_bus.register_listener<E>(
                 [this, listener](const E& event) -> bool {
-                    return std::invoke(listener, event, IExtractor<Es>::operator()(m_world)...);
+                    return std::invoke(listener, event, IExtractor<Es>::operator()(m_world, *this)...);
                 }
             );
 
