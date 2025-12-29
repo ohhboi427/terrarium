@@ -27,7 +27,12 @@ auto number_print(const Res<const Number> number) -> void {
 
 auto terrarium_plugin(App& app) noexcept -> void {
     app.add_system<StartupTag>(hello_world);
-    app.add_system<UpdateTag>(number_print);
+    app.add_system<UpdateTag>(
+        number_print,
+        [](const World&, const App&) noexcept -> bool {
+            return false;
+        }
+    );
 }
 
 auto main() -> i32 {

@@ -3,7 +3,6 @@
 #include <terrarium/core/base.hpp>
 #include <terrarium/core/ecs/extractor.hpp>
 
-#include <concepts>
 #include <functional>
 #include <unordered_map>
 #include <utility>
@@ -71,8 +70,25 @@ namespace terra::core {
         }
     };
 
+    using RunCondition = bool(*)(const World&, const App&);
+
+    template<typename T>
+    struct is_system_option : std::disjunction<
+            std::is_convertible<T, SystemOrdering>,
+            std::is_convertible<T, RunCondition>
+        > {};
+
+    template<typename T>
+    constexpr bool is_system_option_v = is_system_option<T>::value;
+
+    template<typename T>
+    concept SystemOption = is_system_option_v<T>;
+
     class TERRA_CORE_API Schedule {
-        using SystemFunction = std::move_only_function<void(World&, App&)>;
+        struct SystemFunction {
+            std::move_only_function<void(World&, App&)> function;
+            RunCondition condition;
+        };
 
         struct SystemMetadata {
             SystemFunction function;
@@ -85,16 +101,32 @@ namespace terra::core {
         Schedule(const Schedule&) = delete;
 
         template<Extractor... Es>
-        auto add_system(const System<Es...> system, std::convertible_to<SystemOrdering> auto&&... orderings) -> void {
-            m_systems_metadata.try_emplace(
-                reinterpret_cast<detail::SystemHandle>(system),
-                SystemMetadata{
+        auto add_system(const System<Es...> system, SystemOption auto&&... options) -> void {
+            SystemMetadata metadata{
+                .function = {
                     .function = [system](World& world, App& app) noexcept -> void {
                         std::invoke(system, IExtractor<Es>::operator()(world, app)...);
                     },
-                    .orderings = { std::forward<decltype(orderings)>(orderings)... }
+                    .condition = nullptr,
+                },
+                .orderings = {},
+            };
+
+            ([&] {
+                if constexpr(std::is_convertible_v<decltype(options), RunCondition>) {
+                    metadata.function.condition = options;
+                } else if constexpr(std::is_convertible_v<decltype(options), SystemOrdering>) {
+                    metadata.orderings.emplace_back(std::forward<decltype(options)>(options));
                 }
-            );
+            }(), ...);
+
+            if(!metadata.function.condition) {
+                metadata.function.condition = [](const World&, const App&) noexcept -> bool {
+                    return true;
+                };
+            }
+
+            m_systems_metadata.try_emplace(reinterpret_cast<detail::SystemHandle>(system), std::move(metadata));
         }
 
         auto build() -> void;

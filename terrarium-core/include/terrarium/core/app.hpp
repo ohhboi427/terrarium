@@ -41,8 +41,8 @@ namespace terra::core {
 
         template<Tag T, Extractor... Es>
             requires std2::is_clean_type_v<T>
-        auto add_system(const System<Es...> system, std::convertible_to<SystemOrdering> auto&&... orderings) -> App& {
-            m_schedules[typeid(T)].add_system(system, std::forward<decltype(orderings)>(orderings)...);
+        auto add_system(const System<Es...> system, SystemOption auto&&... options) -> App& {
+            m_schedules[typeid(T)].add_system(system, std::forward<decltype(options)>(options)...);
 
             return *this;
         }
