@@ -136,10 +136,11 @@ namespace terra::core {
     class Res<R> {
         using ReferenceType = std::add_lvalue_reference_t<R>;
         using PointerType = std::add_pointer_t<R>;
+        using WorldType = std::conditional_t<std::is_const_v<std::remove_reference_t<R>>, const World, World>;
 
     public:
-        explicit Res(World& world) noexcept
-            : m_object{ static_cast<ReferenceType>(world.get_resource<std2::remove_ref_cv_t<R>>()) } {}
+        explicit Res(WorldType& world) noexcept
+            : m_object{ static_cast<ReferenceType>(world.template get_resource<std2::remove_ref_cv_t<R>>()) } {}
 
         [[nodiscard]] auto operator*() const noexcept -> ReferenceType {
             return m_object;
@@ -157,6 +158,13 @@ namespace terra::core {
     struct IExtractor<Res<R>> {
         [[nodiscard]] static auto operator()(World& world, App&) -> Res<R> {
             return Res<R>{ world };
+        }
+    };
+
+    template<Resource R>
+    struct IExtractor<Res<const R>> {
+        [[nodiscard]] static auto operator()(const World& world, const App&) -> Res<const R> {
+            return Res<const R>{ world };
         }
     };
 }

@@ -70,12 +70,33 @@ namespace terra::core {
         }
     };
 
-    using RunCondition = bool(*)(const World&, const App&);
+    namespace detail {
+        template<ConstExtractor... Es>
+        using RunCondition = bool(*)(Es...);
+
+        template<ConstExtractor... Es>
+        [[nodiscard]] auto wrap_run_condition(const RunCondition<Es...> condition) {
+            return [condition](const World& world, const App& app) noexcept -> bool {
+                return std::invoke(condition, IExtractor<Es>::operator()(world, app)...);
+            };
+        }
+    }
+
+    template<typename T>
+    struct is_run_condition : std::bool_constant<requires(T condition) {
+        detail::wrap_run_condition(condition);
+    }> {};
+
+    template<typename T>
+    constexpr bool is_run_condition_v = is_run_condition<T>::value;
+
+    template<typename T>
+    concept RunCondition = is_run_condition_v<T>;
 
     template<typename T>
     struct is_system_option : std::disjunction<
-            std::is_convertible<T, SystemOrdering>,
-            std::is_convertible<T, RunCondition>
+            is_run_condition<T>,
+            std::is_convertible<T, SystemOrdering>
         > {};
 
     template<typename T>
@@ -87,7 +108,7 @@ namespace terra::core {
     class TERRA_CORE_API Schedule {
         struct SystemFunction {
             std::move_only_function<void(World&, App&)> function;
-            RunCondition condition;
+            std::move_only_function<bool(const World&, const App&)> condition;
         };
 
         struct SystemMetadata {
@@ -113,8 +134,8 @@ namespace terra::core {
             };
 
             ([&] {
-                if constexpr(std::is_convertible_v<decltype(options), RunCondition>) {
-                    metadata.function.condition = options;
+                if constexpr(is_run_condition_v<decltype(options)>) {
+                    metadata.function.condition = detail::wrap_run_condition(options);
                 } else if constexpr(std::is_convertible_v<decltype(options), SystemOrdering>) {
                     metadata.orderings.emplace_back(std::forward<decltype(options)>(options));
                 }
