@@ -25,11 +25,17 @@ auto number_print(const Res<const Number> number) -> void {
     info("Number: {}", number->value);
 }
 
+auto number_print2(const Res<const Number> number) -> void {
+    info("Number2: {}", number->value);
+}
+
 auto terrarium_plugin(App& app) noexcept -> void {
     app.add_system<StartupTag>(hello_world);
-    app.add_system<UpdateTag>(
-        number_print,
-        +[](Res<const Number> number) noexcept -> bool {
+    app.add_system<UpdateTag>(number_print);
+    app.add_system<UpdateTag>(number_print2);
+    app.configure_set(
+        SystemSet<number_print, number_print2>{},
+        +[](Res<const Number> number) {
             return number->value < 10;
         }
     );

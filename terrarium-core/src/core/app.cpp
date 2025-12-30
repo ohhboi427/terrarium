@@ -11,8 +11,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <ranges>
-
 namespace terra::core {
     auto App::run() -> void {
         register_crash_handler();

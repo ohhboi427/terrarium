@@ -53,7 +53,7 @@ namespace terra::core {
 
     auto Schedule::run(World& world, App& app) -> void {
         for(auto& [system, condition] : m_systems) {
-            if(condition(world, app)) {
+            if(!condition || condition(world, app)) {
                 system(world, app);
             }
         }

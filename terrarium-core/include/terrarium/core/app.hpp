@@ -13,6 +13,7 @@
 #include <concepts>
 #include <functional>
 #include <memory>
+#include <ranges>
 #include <typeindex>
 #include <unordered_map>
 #include <utility>
@@ -45,6 +46,20 @@ namespace terra::core {
             m_schedules[typeid(T)].add_system(system, std::forward<decltype(options)>(options)...);
 
             return *this;
+        }
+
+        template<Extractor... Es>
+        auto configure(const System<Es...> system, const SystemOption auto&... options) -> void {
+            for(auto& schedule : m_schedules | std::views::values) {
+                schedule.configure(system, options...);
+            }
+        }
+
+        template<std::convertible_to<detail::ToHandle> auto... Handles>
+        auto configure_set(const SystemSet<Handles...>& set, const SystemOption auto&... options) -> void {
+            for(auto& schedule : m_schedules | std::views::values) {
+                schedule.configure_set(set, options...);
+            }
         }
 
         template<Tag T>

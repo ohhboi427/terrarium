@@ -3,6 +3,7 @@
 #include <terrarium/core/base.hpp>
 #include <terrarium/core/ecs/extractor.hpp>
 
+#include <concepts>
 #include <functional>
 #include <unordered_map>
 #include <utility>
@@ -14,7 +15,7 @@ namespace terra::core {
     class World;
 
     template<Extractor... Es>
-    using System = void(*)(Es...);
+    using System = ExtractorFunction<void, Es...>;
 
     namespace detail {
         using SystemHandle = void(*)();
@@ -72,20 +73,13 @@ namespace terra::core {
 
     namespace detail {
         template<ConstExtractor... Es>
-        using RunCondition = bool(*)(Es...);
-
-        template<ConstExtractor... Es>
-        [[nodiscard]] auto wrap_run_condition(const RunCondition<Es...> condition) {
-            return [condition](const World& world, const App& app) noexcept -> bool {
-                return std::invoke(condition, IExtractor<Es>::operator()(world, app)...);
-            };
-        }
+        using RunCondition = ConstExtractorFunction<bool, Es...>;
     }
 
     template<typename T>
     struct is_run_condition : std::bool_constant<requires(T condition) {
-        detail::wrap_run_condition(condition);
-    }> {};
+            wrap_const_extractor_function(condition);
+        }> {};
 
     template<typename T>
     constexpr bool is_run_condition_v = is_run_condition<T>::value;
@@ -104,6 +98,19 @@ namespace terra::core {
 
     template<typename T>
     concept SystemOption = is_system_option_v<T>;
+
+    namespace detail {
+        struct TERRA_CORE_API ToHandle {
+            SystemHandle handle;
+
+            template<Extractor... Es>
+            ToHandle(const System<Es...> system) noexcept // NOLINT
+                : handle{ reinterpret_cast<SystemHandle>(system) } {}
+        };
+    }
+
+    template<std::convertible_to<detail::ToHandle> auto...>
+    struct SystemSet {};
 
     class TERRA_CORE_API Schedule {
         struct SystemFunction {
@@ -125,29 +132,36 @@ namespace terra::core {
         auto add_system(const System<Es...> system, SystemOption auto&&... options) -> void {
             SystemMetadata metadata{
                 .function = {
-                    .function = [system](World& world, App& app) noexcept -> void {
-                        std::invoke(system, IExtractor<Es>::operator()(world, app)...);
-                    },
-                    .condition = nullptr,
+                    .function = wrap_extractor_function(system),
+                    .condition = {},
                 },
                 .orderings = {},
             };
 
             ([&] {
                 if constexpr(is_run_condition_v<decltype(options)>) {
-                    metadata.function.condition = detail::wrap_run_condition(options);
+                    metadata.function.condition = wrap_const_extractor_function(options);
                 } else if constexpr(std::is_convertible_v<decltype(options), SystemOrdering>) {
                     metadata.orderings.emplace_back(std::forward<decltype(options)>(options));
                 }
             }(), ...);
 
-            if(!metadata.function.condition) {
-                metadata.function.condition = [](const World&, const App&) noexcept -> bool {
-                    return true;
-                };
-            }
-
             m_systems_metadata.try_emplace(reinterpret_cast<detail::SystemHandle>(system), std::move(metadata));
+        }
+
+        template<Extractor... Es>
+        auto configure(const System<Es...> system, SystemOption auto&&... options) -> void {
+            configure_handle(
+                reinterpret_cast<detail::SystemHandle>(system),
+                std::forward<decltype(options)>(options)...
+            );
+        }
+
+        template<std::convertible_to<detail::ToHandle> auto... Handles>
+        auto configure_set(const SystemSet<Handles...>&, const SystemOption auto&... options) -> void {
+            ([&] {
+                configure_handle(reinterpret_cast<detail::SystemHandle>(Handles), options...);
+            }(), ...);
         }
 
         auto build() -> void;
@@ -156,5 +170,31 @@ namespace terra::core {
     private:
         std::vector<SystemFunction> m_systems{};
         std::unordered_map<detail::SystemHandle, SystemMetadata> m_systems_metadata{};
+
+        auto configure_handle(const detail::SystemHandle handle, SystemOption auto&&... options) -> void {
+            const auto it = m_systems_metadata.find(handle);
+            if(it == m_systems_metadata.end()) {
+                return;
+            }
+
+            auto& [function, orderings] = it->second;
+
+            ([&] {
+                if constexpr(is_run_condition_v<decltype(options)>) {
+                    if(function.condition) {
+                        function.condition = [
+                                old_condition = std::move(function.condition),
+                                new_condition = wrap_const_extractor_function(options)
+                            ](const World& world, const App& app) mutable -> bool {
+                                return old_condition(world, app) && new_condition(world, app);
+                            };
+                    } else {
+                        function.condition = wrap_const_extractor_function(options);
+                    }
+                } else if constexpr(std::is_convertible_v<decltype(options), SystemOrdering>) {
+                    orderings.emplace_back(std::forward<decltype(options)>(options));
+                }
+            }(), ...);
+        }
     };
 }
