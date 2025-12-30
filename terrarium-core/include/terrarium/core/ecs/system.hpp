@@ -11,30 +11,50 @@
 #include <vector>
 
 namespace terra::core {
-    class App;
-    class World;
-
     template<Extractor... Es>
     using System = ExtractorFunction<void, Es...>;
 
     namespace detail {
-        using SystemHandle = void(*)();
+        struct TERRA_CORE_API SystemHandle {
+            using Handle = void(*)();
+
+            Handle handle;
+
+            constexpr SystemHandle() = default;
+
+            template<Extractor... Es>
+            constexpr SystemHandle(const System<Es...> system) noexcept // NOLINT
+                : handle{ reinterpret_cast<Handle>(system) } {}
+
+            [[nodiscard]] constexpr operator Handle() const noexcept { // NOLINT
+                return handle;
+            }
+        };
     }
+
+    template<std::convertible_to<detail::SystemHandle> auto...>
+    struct SystemSet {};
+}
+
+template<>
+struct std::hash<terra::core::detail::SystemHandle> {
+    [[nodiscard]] static constexpr auto operator()(
+        const terra::core::detail::SystemHandle handle
+    ) noexcept -> std::size_t {
+        return std::hash<terra::core::detail::SystemHandle::Handle>{}(handle.handle);
+    }
+};
+
+namespace terra::core {
+    class App;
+    class World;
 
     struct TERRA_CORE_API Before {
         detail::SystemHandle system;
-
-        template<Extractor... Es>
-        explicit Before(const System<Es...> system) noexcept
-            : system{ reinterpret_cast<detail::SystemHandle>(system) } {}
     };
 
     struct TERRA_CORE_API After {
         detail::SystemHandle system;
-
-        template<Extractor... Es>
-        explicit After(const System<Es...> system) noexcept
-            : system{ reinterpret_cast<detail::SystemHandle>(system) } {}
     };
 
     struct TERRA_CORE_API SystemOrdering : std::variant<Before, After> {
@@ -99,19 +119,6 @@ namespace terra::core {
     template<typename T>
     concept SystemOption = is_system_option_v<T>;
 
-    namespace detail {
-        struct TERRA_CORE_API ToHandle {
-            SystemHandle handle;
-
-            template<Extractor... Es>
-            ToHandle(const System<Es...> system) noexcept // NOLINT
-                : handle{ reinterpret_cast<SystemHandle>(system) } {}
-        };
-    }
-
-    template<std::convertible_to<detail::ToHandle> auto...>
-    struct SystemSet {};
-
     class TERRA_CORE_API Schedule {
         struct SystemFunction {
             std::move_only_function<void(World&, App&)> function;
@@ -146,21 +153,21 @@ namespace terra::core {
                 }
             }(), ...);
 
-            m_systems_metadata.try_emplace(reinterpret_cast<detail::SystemHandle>(system), std::move(metadata));
+            m_systems_metadata.try_emplace(system, std::move(metadata));
         }
 
         template<Extractor... Es>
         auto configure(const System<Es...> system, SystemOption auto&&... options) -> void {
             configure_handle(
-                reinterpret_cast<detail::SystemHandle>(system),
+                system,
                 std::forward<decltype(options)>(options)...
             );
         }
 
-        template<std::convertible_to<detail::ToHandle> auto... Handles>
+        template<std::convertible_to<detail::SystemHandle> auto... Handles>
         auto configure_set(const SystemSet<Handles...>&, const SystemOption auto&... options) -> void {
             ([&] {
-                configure_handle(reinterpret_cast<detail::SystemHandle>(Handles), options...);
+                configure_handle(Handles, options...);
             }(), ...);
         }
 

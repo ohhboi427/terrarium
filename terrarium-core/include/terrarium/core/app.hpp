@@ -55,7 +55,7 @@ namespace terra::core {
             }
         }
 
-        template<std::convertible_to<detail::ToHandle> auto... Handles>
+        template<std::convertible_to<detail::SystemHandle> auto... Handles>
         auto configure_set(const SystemSet<Handles...>& set, const SystemOption auto&... options) -> void {
             for(auto& schedule : m_schedules | std::views::values) {
                 schedule.configure_set(set, options...);

@@ -36,7 +36,7 @@ auto terrarium_plugin(App& app) noexcept -> void {
     app.configure_set(
         SystemSet<number_print, number_print2>{},
         +[](Res<const Number> number) {
-            return number->value < 10;
+            return number->value < 100;
         }
     );
 }
