@@ -4,10 +4,12 @@
 #include <terrarium/core/event.hpp>
 #include <terrarium/core/plugin.hpp>
 #include <terrarium/core/task.hpp>
+#include <terrarium/core/debug/assert.hpp>
 #include <terrarium/core/ecs/extractor.hpp>
 #include <terrarium/core/ecs/system.hpp>
 #include <terrarium/core/ecs/tag.hpp>
 #include <terrarium/core/ecs/world.hpp>
+#include <terrarium/core/utils/locator.hpp>
 
 #include <atomic>
 #include <concepts>
@@ -15,6 +17,7 @@
 #include <memory>
 #include <ranges>
 #include <typeindex>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 
@@ -26,6 +29,17 @@ namespace terra::core {
     struct TERRA_CORE_API ShutdownTag : ITag {};
 
     struct TERRA_CORE_API AppQuitEvent : IEvent {};
+
+    struct TERRA_CORE_API IService {};
+
+    template<typename T>
+    struct is_service : std::is_base_of<IService, std::remove_cvref_t<T>> {};
+
+    template<typename T>
+    constexpr bool is_service_v = is_service<T>::value;
+
+    template<typename T>
+    concept Service = is_service_v<T>;
 
     class TERRA_CORE_API App {
         friend class Events;
@@ -49,17 +63,21 @@ namespace terra::core {
         }
 
         template<Extractor... Es>
-        auto configure(const System<Es...> system, const SystemOption auto&... options) -> void {
+        auto configure(const System<Es...> system, const SystemOption auto&... options) -> App& {
             for(auto& schedule : m_schedules | std::views::values) {
                 schedule.configure(system, options...);
             }
+
+            return *this;
         }
 
         template<std::convertible_to<detail::SystemHandle> auto... Handles>
-        auto configure_set(const SystemSet<Handles...>& set, const SystemOption auto&... options) -> void {
+        auto configure_set(const SystemSet<Handles...>& set, const SystemOption auto&... options) -> App& {
             for(auto& schedule : m_schedules | std::views::values) {
                 schedule.configure_set(set, options...);
             }
+
+            return *this;
         }
 
         template<Tag T>
@@ -84,6 +102,23 @@ namespace terra::core {
             return *this;
         }
 
+        template<Service S, typename... Args>
+            requires std2::is_clean_type_v<std::remove_reference_t<S>> && std::is_constructible_v<S, Args...>
+        auto make_service(Args&&... args) -> App& {
+            m_services.make_object<S>(std::forward<Args>(args)...);
+
+            return *this;
+        }
+
+        template<Service S>
+            requires std2::is_clean_type_v<std::remove_reference_t<S>>
+        [[nodiscard]] decltype(auto) get_service(this auto&& self) noexcept {
+            auto* service = self.m_services.template get_object<S>();
+            TERRA_DEBUG_ASSERT(service != nullptr, "Service '{}' not found", typeid(S).name());
+
+            return *service;
+        }
+
     private:
         std::atomic<bool> m_running = false;
 
@@ -92,6 +127,8 @@ namespace terra::core {
 
         World m_world{};
         std::unordered_map<std::type_index, Schedule> m_schedules{};
+
+        Locator m_services{};
     };
 
     class TERRA_CORE_API Events {
