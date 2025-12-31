@@ -3,6 +3,7 @@
 #include <terrarium/core/base.hpp>
 #include <terrarium/core/event.hpp>
 #include <terrarium/core/plugin.hpp>
+#include <terrarium/core/service.hpp>
 #include <terrarium/core/task.hpp>
 #include <terrarium/core/debug/assert.hpp>
 #include <terrarium/core/ecs/extractor.hpp>
@@ -29,17 +30,6 @@ namespace terra::core {
     struct TERRA_CORE_API ShutdownTag : ITag {};
 
     struct TERRA_CORE_API AppQuitEvent : IEvent {};
-
-    struct TERRA_CORE_API IService {};
-
-    template<typename T>
-    struct is_service : std::is_base_of<IService, std::remove_cvref_t<T>> {};
-
-    template<typename T>
-    constexpr bool is_service_v = is_service<T>::value;
-
-    template<typename T>
-    concept Service = is_service_v<T>;
 
     class TERRA_CORE_API App {
         friend class Events;

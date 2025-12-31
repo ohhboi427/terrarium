@@ -9,9 +9,7 @@
 
 #include <functional>
 #include <queue>
-#include <typeindex>
 #include <type_traits>
-#include <unordered_map>
 #include <utility>
 
 namespace terra::core {
