@@ -95,18 +95,15 @@ namespace terra::core {
         [[nodiscard]] static auto operator()(World& world, App&) noexcept -> Commands;
     };
 
-    template<typename>
-    class Res;
-
     template<Resource R>
-    class Res<R> {
+    class Res {
         using ReferenceType = std::add_lvalue_reference_t<R>;
         using PointerType = std::add_pointer_t<R>;
         using WorldType = std::conditional_t<std::is_const_v<std::remove_reference_t<R>>, const World, World>;
 
     public:
         explicit Res(WorldType& world) noexcept
-            : m_object{ static_cast<ReferenceType>(world.template get_resource<std2::remove_ref_cv_t<R>>()) } {}
+            : m_object{ world.template get_resource<std2::remove_ref_cv_t<R>>() } {}
 
         [[nodiscard]] auto operator*() const noexcept -> ReferenceType {
             return m_object;

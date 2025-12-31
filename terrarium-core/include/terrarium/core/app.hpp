@@ -160,4 +160,40 @@ namespace terra::core {
     struct TERRA_CORE_API IExtractor<Tasks> {
         [[nodiscard]] static auto operator()(World&, App& app) noexcept -> Tasks;
     };
+
+    template<Service S>
+    class Serv {
+        using ReferenceType = std::add_lvalue_reference_t<S>;
+        using PointerType = std::add_pointer_t<S>;
+        using AppType = std::conditional_t<std::is_const_v<std::remove_reference_t<S>>, const App, App>;
+
+    public:
+        explicit Serv(AppType& app) noexcept
+            : m_object{ app.template get_service<std2::remove_ref_cv_t<S>>() } {}
+
+        [[nodiscard]] auto operator*() const noexcept -> ReferenceType {
+            return m_object;
+        }
+
+        [[nodiscard]] auto operator->() const noexcept -> PointerType {
+            return &m_object;
+        }
+
+    protected:
+        ReferenceType& m_object;
+    };
+
+    template<Resource S>
+    struct IExtractor<Serv<S>> {
+        [[nodiscard]] static auto operator()(World&, App& app) -> Serv<S> {
+            return Serv<S>{ app };
+        }
+    };
+
+    template<Resource S>
+    struct IExtractor<Serv<const S>> {
+        [[nodiscard]] static auto operator()(const World&, const App& app) -> Serv<const S> {
+            return Serv<const S>{ app };
+        }
+    };
 }
