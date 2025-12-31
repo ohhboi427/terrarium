@@ -76,10 +76,7 @@ namespace terra {
     using UniqueAny = std::unique_ptr<void, void(*)(void*)>;
 
     template<typename T, typename... Args>
-        requires std::conjunction_v<
-            std::is_constructible<T, Args...>,
-            std2::is_clean_type<T>
-        >
+        requires std::is_constructible_v<T, Args...> && std2::is_clean_type_v<T>
     [[nodiscard]] constexpr auto make_unique_any(Args&&... args) -> UniqueAny {
         return {
             new T{ std::forward<Args>(args)... },

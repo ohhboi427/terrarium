@@ -108,9 +108,9 @@ namespace terra::core {
     concept RunCondition = is_run_condition_v<T>;
 
     template<typename T>
-    struct is_system_option : std::disjunction<
-            is_run_condition<T>,
-            std::is_convertible<T, SystemOrdering>
+    struct is_system_option : std::bool_constant<
+            is_run_condition_v<T> ||
+            std::is_convertible_v<T, SystemOrdering>
         > {};
 
     template<typename T>

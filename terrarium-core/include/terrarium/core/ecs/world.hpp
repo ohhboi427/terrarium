@@ -28,10 +28,7 @@ namespace terra::core {
             CommandQueue(const CommandQueue&) = delete;
 
             template<Resource R, typename... Args>
-                requires std::conjunction_v<
-                    std::is_constructible<R, Args...>,
-                    std2::is_clean_type<std::remove_reference_t<R>>
-                >
+                requires std::is_constructible_v<R, Args...> && std2::is_clean_type_v<std::remove_reference_t<R>>
             auto make_resource(Args&&... args) -> void;
 
             auto flush(World& world) -> void;
@@ -46,10 +43,7 @@ namespace terra::core {
         World(const World&) = delete;
 
         template<Resource R, typename... Args>
-            requires std::conjunction_v<
-                std::is_constructible<R, Args...>,
-                std2::is_clean_type<std::remove_reference_t<R>>
-            >
+            requires std::is_constructible_v<R, Args...> && std2::is_clean_type_v<std::remove_reference_t<R>>
         auto make_resource(Args&&... args) -> void {
             m_resources.make_object<R>(std::forward<Args>(args)...);
         }
@@ -72,10 +66,7 @@ namespace terra::core {
     };
 
     template<Resource R, typename... Args>
-        requires std::conjunction_v<
-            std::is_constructible<R, Args...>,
-            std2::is_clean_type<std::remove_reference_t<R>>
-        >
+        requires std::is_constructible_v<R, Args...> && std2::is_clean_type_v<std::remove_reference_t<R>>
     auto World::CommandQueue::make_resource(Args&&... args) -> void {
         auto commands = m_commands.lock();
         commands->emplace(
@@ -90,10 +81,7 @@ namespace terra::core {
         explicit Commands(World& world) noexcept;
 
         template<Resource R, typename... Args>
-            requires std::conjunction_v<
-                std::is_constructible<R, Args...>,
-                std2::is_clean_type<std::remove_reference_t<R>>
-            >
+            requires std::is_constructible_v<R, Args...> && std2::is_clean_type_v<std::remove_reference_t<R>>
         auto make_resource(Args&&... args) -> void {
             m_queue.make_resource<R>(std::forward<Args>(args)...);
         }
