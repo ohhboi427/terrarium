@@ -26,7 +26,7 @@ namespace terra::core {
     using ExtractorFunction = R(*)(Es...);
 
     template<typename R, Extractor... Es>
-    [[nodiscard]] auto wrap_extractor_function(const ExtractorFunction<R, Es...> function) {
+    [[nodiscard]] constexpr auto wrap_extractor_function(const ExtractorFunction<R, Es...> function) {
         return [function](World& world, App& app) mutable {
             if constexpr(std::is_same_v<R, void>) {
                 std::invoke(function, IExtractor<Es>::operator()(world, app)...);
@@ -51,7 +51,7 @@ namespace terra::core {
     using ConstExtractorFunction = R(*)(Es...);
 
     template<typename R, ConstExtractor... Es>
-    [[nodiscard]] auto wrap_const_extractor_function(const ConstExtractorFunction<R, Es...> function) {
+    [[nodiscard]] constexpr auto wrap_const_extractor_function(const ConstExtractorFunction<R, Es...> function) {
         return [function](const World& world, const App& app) mutable {
             if constexpr(std::is_same_v<R, void>) {
                 std::invoke(function, IExtractor<Es>::operator()(world, app)...);
