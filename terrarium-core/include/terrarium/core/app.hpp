@@ -25,7 +25,11 @@
 namespace terra::core {
     struct TERRA_CORE_API StartupTag : ITag {};
 
+    struct TERRA_CORE_API FrameBeginTag : ITag {};
+
     struct TERRA_CORE_API UpdateTag : ITag {};
+
+    struct TERRA_CORE_API FrameEndTag : ITag {};
 
     struct TERRA_CORE_API ShutdownTag : ITag {};
 
@@ -183,14 +187,14 @@ namespace terra::core {
         ReferenceType& m_object;
     };
 
-    template<Resource S>
+    template<Service S>
     struct IExtractor<Serv<S>> {
         [[nodiscard]] static auto operator()(World&, App& app) -> Serv<S> {
             return Serv<S>{ app };
         }
     };
 
-    template<Resource S>
+    template<Service S>
     struct IExtractor<Serv<const S>> {
         [[nodiscard]] static auto operator()(const World&, const App& app) -> Serv<const S> {
             return Serv<const S>{ app };

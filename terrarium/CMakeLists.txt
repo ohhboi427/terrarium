@@ -3,6 +3,7 @@ add_executable(terrarium "src/main.cpp")
 target_link_libraries(terrarium
     PRIVATE
     Terrarium::Core
+    Terrarium::Platform
 )
 
 if(WIN32)

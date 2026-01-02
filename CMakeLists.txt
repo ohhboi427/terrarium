@@ -29,4 +29,5 @@ if(NOT TERRARIUM_BUILD_SHARED AND NOT TERRARIUM_BUILD_STATIC)
 endif()
 
 add_subdirectory("terrarium-core")
+add_subdirectory("terrarium-platform")
 add_subdirectory("terrarium")
