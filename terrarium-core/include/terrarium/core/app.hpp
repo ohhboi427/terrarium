@@ -98,10 +98,8 @@ namespace terra::core {
 
         template<Service S, typename... Args>
             requires std2::is_clean_type_v<std::remove_reference_t<S>> && std::is_constructible_v<S, Args...>
-        auto make_service(Args&&... args) -> App& {
-            m_services.make_object<S>(std::forward<Args>(args)...);
-
-            return *this;
+        auto make_service(Args&&... args) -> S& {
+            return m_services.make_object<S>(std::forward<Args>(args)...);
         }
 
         template<Service S>

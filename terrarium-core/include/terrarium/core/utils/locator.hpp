@@ -2,13 +2,16 @@
 
 #include <terrarium/core/base.hpp>
 
+#include <algorithm>
 #include <typeindex>
 #include <type_traits>
-#include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace terra::core {
     class TERRA_CORE_API Locator {
+        using Node = std::pair<std::type_index, UniqueAny>;
+
     public:
         Locator() = default;
 
@@ -17,17 +20,19 @@ namespace terra::core {
 
         template<typename T, typename... Args>
             requires std2::is_clean_type_v<std::remove_reference_t<T>> && std::is_constructible_v<T, Args...>
-        auto make_object(Args&&... args) -> void {
+        auto make_object(Args&&... args) -> std::add_lvalue_reference_t<T> {
             using Inner = std::conditional_t<
                 std::is_reference_v<T>,
                 std::reference_wrapper<T>,
                 T
             >;
 
-            m_objects.try_emplace(
+            auto& [type, object] = m_objects.emplace_back(
                 typeid(Inner),
                 make_unique_any<Inner>(std::forward<Args>(args)...)
             );
+
+            return *static_cast<Inner*>(object.get());
         }
 
         template<typename T>
@@ -45,7 +50,13 @@ namespace terra::core {
                 std::remove_reference_t<T>
             >;
 
-            const auto it = self.m_objects.find(typeid(Inner));
+            const auto it = std::ranges::find_if(
+                self.m_objects,
+                [](const std::pair<std::type_index, UniqueAny>& object) noexcept -> bool {
+                    return object.first == typeid(Inner);
+                }
+            );
+
             if(it == self.m_objects.end()) {
                 return static_cast<ObjectType*>(nullptr);
             }
@@ -63,10 +74,17 @@ namespace terra::core {
                 T
             >;
 
-            return m_objects.contains(typeid(Inner));
+            const auto it = std::ranges::find_if(
+                m_objects,
+                [](const std::pair<std::type_index, UniqueAny>& object) noexcept -> bool {
+                    return object.first == typeid(Inner);
+                }
+            );
+
+            return it != m_objects.end();
         }
 
     private:
-        std::unordered_map<std::type_index, UniqueAny> m_objects{};
+        std::vector<std::pair<std::type_index, UniqueAny>> m_objects{};
     };
 }

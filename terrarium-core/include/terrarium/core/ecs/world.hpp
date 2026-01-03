@@ -44,8 +44,8 @@ namespace terra::core {
 
         template<Resource R, typename... Args>
             requires std::is_constructible_v<R, Args...> && std2::is_clean_type_v<std::remove_reference_t<R>>
-        auto make_resource(Args&&... args) -> void {
-            m_resources.make_object<R>(std::forward<Args>(args)...);
+        auto make_resource(Args&&... args) -> std::add_lvalue_reference_t<R> {
+            return m_resources.make_object<R>(std::forward<Args>(args)...);
         }
 
         template<Resource R>
