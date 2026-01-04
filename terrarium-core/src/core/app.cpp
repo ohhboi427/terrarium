@@ -5,10 +5,14 @@
 #include <core/debug/assert.hpp>
 
 namespace terra::core {
+    App::App() {
+        m_event_bus = std::make_unique<EventBus>();
+        m_task_pool = std::make_unique<TaskPool>(8U);
+    }
+
     auto App::run() -> void {
         register_crash_handler();
 
-        m_event_bus = std::make_unique<EventBus>();
         m_event_bus->register_listener<AppQuitEvent>(
             [this](const AppQuitEvent&) noexcept -> bool {
                 m_running.store(false, std::memory_order::release);
@@ -16,8 +20,6 @@ namespace terra::core {
                 return true;
             }
         );
-
-        m_task_pool = std::make_unique<TaskPool>(8U);
 
         for(auto& schedule : m_schedules | std::views::values) {
             schedule.build();

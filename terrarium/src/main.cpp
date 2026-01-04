@@ -1,6 +1,7 @@
 #include <terrarium/core/app.hpp>
 #include <terrarium/core/debug/log.hpp>
 #include <terrarium/platform/platform.hpp>
+#include <terrarium/platform/input.hpp>
 
 using namespace terra::primitives;
 
@@ -13,6 +14,15 @@ auto hello_world() -> void {
 
 auto terrarium_plugin(App& app) noexcept -> void {
     app.add_system<StartupTag>(hello_world);
+    app.register_listener(
+        +[](const KeyEvent& event, Events events) noexcept -> bool {
+            if(event.key == Keys::Escape && (event.mods & Modifiers::Shift) != Modifiers::None) {
+                events.dispatch(AppQuitEvent{});
+            }
+
+            return false;
+        }
+    );
 }
 
 auto main() -> i32 {

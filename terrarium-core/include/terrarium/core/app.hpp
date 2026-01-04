@@ -40,6 +40,11 @@ namespace terra::core {
         friend class Tasks;
 
     public:
+        App();
+
+        App(App&&) noexcept = delete;
+        App(const App&) = delete;
+
         auto run() -> void;
 
         auto add_plugin(Plugin auto&& plugin) -> App& {
