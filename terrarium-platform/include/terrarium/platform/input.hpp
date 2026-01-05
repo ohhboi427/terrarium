@@ -1,11 +1,15 @@
 #pragma once
 
 #include <terrarium/core/event.hpp>
-#include <terrarium/core/service.hpp>
+#include <terrarium/core/ecs/extractor.hpp>
 #include <terrarium/platform/base.hpp>
 
-#include <bitset>
 #include <utility>
+
+namespace terra::core {
+    class App;
+    class World;
+}
 
 namespace terra::platform {
     enum class Keys : u32 {
@@ -231,10 +235,8 @@ namespace terra::platform {
     };
 
     struct TERRA_PLATFORM_API MouseMoveEvent : core::IEvent {
-        i32 x;
-        i32 y;
-        i32 dx;
-        i32 dy;
+        std::pair<i32, i32> position;
+        std::pair<i32, i32> delta;
     };
 
     struct TERRA_PLATFORM_API ScrollEvent : core::IEvent {
@@ -242,21 +244,23 @@ namespace terra::platform {
         i32 dy;
     };
 
-    class TERRA_PLATFORM_API InputState : core::IService {
-        friend class InputHandler;
+    struct InputState;
 
+    class TERRA_PLATFORM_API Inputs {
     public:
-        [[nodiscard]] auto key_state(Keys key) const noexcept -> Actions;
-        [[nodiscard]] auto mouse_button_state(MouseButtons button) const noexcept -> Actions;
-        [[nodiscard]] auto mouse_position() const noexcept -> std::pair<i32, i32>;
-        [[nodiscard]] auto mouse_delta() const noexcept -> std::pair<i32, i32>;
+        explicit Inputs(const core::App& app) noexcept;
+
+        auto key_state(Keys key) const noexcept -> Actions;
+        auto mouse_button_state(MouseButtons button) const noexcept -> Actions;
+        auto mouse_position() const noexcept -> std::pair<i32, i32>;
+        auto mouse_delta() const noexcept -> std::pair<i32, i32>;
 
     private:
-        std::bitset<512U> m_key_states{};
-        std::bitset<5U> m_mouse_button_states{};
-        i32 m_mouse_x{};
-        i32 m_mouse_y{};
-        i32 m_mouse_dx{};
-        i32 m_mouse_dy{};
+        const InputState& m_internal;
     };
 }
+
+template<>
+struct TERRA_PLATFORM_API terra::core::IExtractor<terra::platform::Inputs> {
+    [[nodiscard]] static auto operator()(const World&, const App& app) noexcept -> platform::Inputs;
+};

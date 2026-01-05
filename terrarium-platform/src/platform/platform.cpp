@@ -1,7 +1,6 @@
 #include <terrarium/platform/platform.hpp>
 
 #include <terrarium/core/app.hpp>
-#include <terrarium/platform/input.hpp>
 #include <terrarium/platform/window.hpp>
 
 #include <platform/input.hpp>
@@ -19,7 +18,7 @@ namespace terra::platform {
     using namespace core;
 
     auto poll_events(Events events, const Serv<InputState> input_state) noexcept -> void {
-        const InputHandler input_handler{ *input_state, events };
+        input_state->mouse_delta = {};
 
         SDL_Event event{};
         while(SDL_PollEvent(&event)) {
@@ -34,7 +33,7 @@ namespace terra::platform {
             case SDL_EVENT_MOUSE_BUTTON_DOWN: [[fallthrough]];
             case SDL_EVENT_MOUSE_MOTION: [[fallthrough]];
             case SDL_EVENT_MOUSE_WHEEL:
-                input_handler.handle_event(event);
+                input_state->handle_event(event, events);
                 break;
 
             case SDL_EVENT_WINDOW_RESIZED:

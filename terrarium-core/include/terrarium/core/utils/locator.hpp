@@ -10,8 +10,6 @@
 
 namespace terra::core {
     class TERRA_CORE_API Locator {
-        using Node = std::pair<std::type_index, UniqueAny>;
-
     public:
         Locator() = default;
 
