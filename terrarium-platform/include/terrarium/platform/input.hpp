@@ -1,8 +1,10 @@
 #pragma once
 
 #include <terrarium/core/event.hpp>
+#include <terrarium/core/service.hpp>
 #include <terrarium/platform/base.hpp>
 
+#include <bitset>
 #include <utility>
 
 namespace terra::platform {
@@ -238,5 +240,23 @@ namespace terra::platform {
     struct TERRA_PLATFORM_API ScrollEvent : core::IEvent {
         i32 dx;
         i32 dy;
+    };
+
+    class TERRA_PLATFORM_API InputState : core::IService {
+        friend class InputHandler;
+
+    public:
+        [[nodiscard]] auto key_state(Keys key) const noexcept -> Actions;
+        [[nodiscard]] auto mouse_button_state(MouseButtons button) const noexcept -> Actions;
+        [[nodiscard]] auto mouse_position() const noexcept -> std::pair<i32, i32>;
+        [[nodiscard]] auto mouse_delta() const noexcept -> std::pair<i32, i32>;
+
+    private:
+        std::bitset<512U> m_key_states{};
+        std::bitset<5U> m_mouse_button_states{};
+        i32 m_mouse_x{};
+        i32 m_mouse_y{};
+        i32 m_mouse_dx{};
+        i32 m_mouse_dy{};
     };
 }

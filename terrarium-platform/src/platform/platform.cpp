@@ -4,6 +4,7 @@
 #include <terrarium/platform/input.hpp>
 #include <terrarium/platform/window.hpp>
 
+#include <platform/input.hpp>
 #include <platform/sdl_context.hpp>
 #include <platform/window.hpp>
 
@@ -17,7 +18,9 @@
 namespace terra::platform {
     using namespace core;
 
-    auto poll_events(Events events) noexcept -> void {
+    auto poll_events(Events events, const Serv<InputState> input_state) noexcept -> void {
+        const InputHandler input_handler{ *input_state, events };
+
         SDL_Event event{};
         while(SDL_PollEvent(&event)) {
             switch(event.type) {
@@ -26,44 +29,12 @@ namespace terra::platform {
                 break;
 
             case SDL_EVENT_KEY_UP: [[fallthrough]];
-            case SDL_EVENT_KEY_DOWN:
-                events.dispatch(
-                    KeyEvent{
-                        .key = static_cast<Keys>(event.key.key),
-                        .action = static_cast<Actions>(event.key.down),
-                        .mods = static_cast<Modifiers>(event.key.mod),
-                    }
-                );
-                break;
-
+            case SDL_EVENT_KEY_DOWN: [[fallthrough]];
             case SDL_EVENT_MOUSE_BUTTON_UP: [[fallthrough]];
-            case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                events.dispatch(
-                    MouseButtonEvent{
-                        .button = static_cast<MouseButtons>(event.button.button),
-                        .action = static_cast<Actions>(event.button.down),
-                    }
-                );
-                break;
-
-            case SDL_EVENT_MOUSE_MOTION:
-                events.dispatch(
-                    MouseMoveEvent{
-                        .x = static_cast<i32>(event.motion.x),
-                        .y = static_cast<i32>(event.motion.y),
-                        .dx = static_cast<i32>(event.motion.xrel),
-                        .dy = static_cast<i32>(event.motion.yrel),
-                    }
-                );
-                break;
-
+            case SDL_EVENT_MOUSE_BUTTON_DOWN: [[fallthrough]];
+            case SDL_EVENT_MOUSE_MOTION: [[fallthrough]];
             case SDL_EVENT_MOUSE_WHEEL:
-                events.dispatch(
-                    ScrollEvent{
-                        .dx = event.wheel.integer_x,
-                        .dy = event.wheel.integer_y,
-                    }
-                );
+                input_handler.handle_event(event);
                 break;
 
             case SDL_EVENT_WINDOW_RESIZED:
@@ -91,6 +62,7 @@ namespace terra::platform {
     auto platform_plugin(App& app) noexcept -> void {
         app.make_service<SdlContext>();
         app.make_service<Window>("Terrarium", 1280, 720);
+        app.make_service<InputState>();
 
         app.add_system<FrameBeginTag>(poll_events);
         app.add_system<FrameEndTag>(swap_buffers);
