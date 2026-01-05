@@ -46,6 +46,35 @@ namespace terra::platform {
                 );
                 break;
 
+            case SDL_EVENT_MOUSE_MOTION:
+                events.dispatch(
+                    MouseMoveEvent{
+                        .x = static_cast<i32>(event.motion.x),
+                        .y = static_cast<i32>(event.motion.y),
+                        .dx = static_cast<i32>(event.motion.xrel),
+                        .dy = static_cast<i32>(event.motion.yrel),
+                    }
+                );
+                break;
+
+            case SDL_EVENT_MOUSE_WHEEL:
+                events.dispatch(
+                    ScrollEvent{
+                        .dx = event.wheel.integer_x,
+                        .dy = event.wheel.integer_y,
+                    }
+                );
+                break;
+
+            case SDL_EVENT_WINDOW_RESIZED:
+                events.dispatch(
+                    WindowResizeEvent{
+                        .width = event.window.data1,
+                        .height = event.window.data2,
+                    }
+                );
+                break;
+
             default:
                 break;
             }

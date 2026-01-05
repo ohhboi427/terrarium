@@ -227,4 +227,16 @@ namespace terra::platform {
         MouseButtons button;
         Actions action;
     };
+
+    struct TERRA_PLATFORM_API MouseMoveEvent : core::IEvent {
+        i32 x;
+        i32 y;
+        i32 dx;
+        i32 dy;
+    };
+
+    struct TERRA_PLATFORM_API ScrollEvent : core::IEvent {
+        i32 dx;
+        i32 dy;
+    };
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <terrarium/core/event.hpp>
 #include <terrarium/core/service.hpp>
 #include <terrarium/platform/base.hpp>
 
@@ -18,5 +19,10 @@ namespace terra::platform {
 
     private:
         void* m_handle;
+    };
+
+    struct TERRA_PLATFORM_API WindowResizeEvent : core::IEvent {
+        i32 width;
+        i32 height;
     };
 }
