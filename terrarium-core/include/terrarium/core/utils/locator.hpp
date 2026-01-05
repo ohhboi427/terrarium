@@ -12,6 +12,7 @@ namespace terra::core {
     class TERRA_CORE_API Locator {
     public:
         Locator() = default;
+        ~Locator() noexcept;
 
         Locator(Locator&&) noexcept = delete;
         Locator(const Locator&) = delete;
