@@ -7,7 +7,8 @@ namespace terra::platform {
     using namespace core;
 
     auto InputState::key_state(const Keys key) const noexcept -> Actions {
-        return static_cast<Actions>(m_key_states.test(std::to_underlying(key)));
+        const auto scancode = SDL_GetScancodeFromKey(std::to_underlying(key), nullptr);
+        return static_cast<Actions>(m_key_states.test(scancode));
     }
 
     auto InputState::mouse_button_state(const MouseButtons button) const noexcept -> Actions {
@@ -23,7 +24,10 @@ namespace terra::platform {
     }
 
     InputHandler::InputHandler(InputState& state, Events& events) noexcept
-        : m_state{ state }, m_events{ events } {}
+        : m_state{ state }, m_events{ events } {
+        m_state.m_mouse_dx = 0;
+        m_state.m_mouse_dy = 0;
+    }
 
     auto InputHandler::handle_event(const SDL_Event& event) const noexcept -> void {
         switch(event.type) {
@@ -55,9 +59,7 @@ namespace terra::platform {
         const auto action = static_cast<Actions>(event.down);
         const auto mods = static_cast<Modifiers>(event.mod);
 
-        auto mod = event.mod;
-        const auto scancode = SDL_GetScancodeFromKey(event.key, &mod);
-
+        const auto scancode = SDL_GetScancodeFromKey(event.key, nullptr);
         m_state.m_key_states.set(scancode, std::to_underlying(action));
 
         m_events.dispatch(KeyEvent{ .key = key, .action = action, .mods = mods });
@@ -76,8 +78,8 @@ namespace terra::platform {
         m_state.m_mouse_x = static_cast<i32>(event.x);
         m_state.m_mouse_y = static_cast<i32>(event.y);
 
-        m_state.m_mouse_dx = static_cast<i32>(event.xrel);
-        m_state.m_mouse_dy = static_cast<i32>(event.yrel);
+        m_state.m_mouse_dx += static_cast<i32>(event.xrel);
+        m_state.m_mouse_dy += static_cast<i32>(event.yrel);
 
         m_events.dispatch(
             MouseMoveEvent{

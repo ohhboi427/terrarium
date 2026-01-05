@@ -19,6 +19,6 @@ namespace terra::platform {
         auto handle_key_event(const SDL_KeyboardEvent& event) const noexcept -> void;
         auto handle_mouse_button_event(const SDL_MouseButtonEvent& event) const noexcept -> void;
         auto handle_mouse_move_event(const SDL_MouseMotionEvent& event) const noexcept -> void;
-        auto handle_scroll_event(const SDL_MouseWheelEvent& event)const noexcept -> void;
+        auto handle_scroll_event(const SDL_MouseWheelEvent& event) const noexcept -> void;
     };
 }
