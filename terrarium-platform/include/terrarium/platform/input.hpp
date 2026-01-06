@@ -250,10 +250,10 @@ namespace terra::platform {
     public:
         explicit Inputs(const core::App& app) noexcept;
 
-        auto key_state(Keys key) const noexcept -> Actions;
-        auto mouse_button_state(MouseButtons button) const noexcept -> Actions;
-        auto mouse_position() const noexcept -> std::pair<i32, i32>;
-        auto mouse_delta() const noexcept -> std::pair<i32, i32>;
+        [[nodiscard]] auto key_state(Keys key) const noexcept -> Actions;
+        [[nodiscard]] auto mouse_button_state(MouseButtons button) const noexcept -> Actions;
+        [[nodiscard]] auto mouse_position() const noexcept -> std::pair<i32, i32>;
+        [[nodiscard]] auto mouse_delta() const noexcept -> std::pair<i32, i32>;
 
     private:
         const InputState& m_internal;
