@@ -1,7 +1,7 @@
 #include <platform/input.hpp>
 #include <terrarium/platform/input.hpp>
 
-#include <SDL3/SDL.h>
+#include <terrarium/core/app.hpp>
 
 namespace terra::platform {
     using namespace core;

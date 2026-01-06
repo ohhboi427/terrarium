@@ -1,6 +1,5 @@
 #pragma once
 
-#include <terrarium/core/app.hpp>
 #include <terrarium/core/service.hpp>
 #include <terrarium/platform/base.hpp>
 
@@ -8,6 +7,10 @@
 
 #include <bitset>
 #include <utility>
+
+namespace terra::core {
+    class Events;
+}
 
 namespace terra::platform {
     struct InputState : core::IService {
