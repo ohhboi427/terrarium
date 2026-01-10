@@ -6,6 +6,17 @@
 namespace terra::platform {
     using namespace core;
 
+    Modifiers::Modifiers(const Keys keys) noexcept
+        : m_keys{ keys } {}
+
+    auto Modifiers::has_all(const Keys keys) const noexcept -> bool {
+        return (m_keys & keys) == keys;
+    }
+
+    auto Modifiers::has_any(const Keys keys) const noexcept -> bool {
+        return (m_keys & keys) != None;
+    }
+
     auto InputState::handle_event(const SDL_Event& event, Events& events) noexcept -> void {
         switch(event.type) {
         case SDL_EVENT_KEY_UP: [[fallthrough]];
@@ -34,7 +45,7 @@ namespace terra::platform {
     auto InputState::handle_key_event(const SDL_KeyboardEvent& event, Events& events) noexcept -> void {
         const auto key = static_cast<Keys>(event.key);
         const auto action = static_cast<Actions>(event.down);
-        const auto mods = static_cast<Modifiers>(event.mod);
+        const Modifiers mods{ static_cast<Modifiers::Keys>(event.mod) };
 
         const auto scancode = SDL_GetScancodeFromKey(event.key, nullptr);
         key_states.set(scancode, std::to_underlying(action));

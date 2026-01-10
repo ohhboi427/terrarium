@@ -188,34 +188,44 @@ namespace terra::platform {
         Forward = 5U,
     };
 
-    enum class Modifiers : u16 {
-        None = 0U,
+    class TERRA_PLATFORM_API Modifiers {
+    public:
+        enum Keys : u16 {
+            None = 0U,
 
-        LeftShift = 0x0001U,
-        RightShift = 0x0002U,
-        Level5 = 0x0004U,
-        LeftCtrl = 0x0040U,
-        RightCtrl = 0x0080U,
-        LeftAlt = 0x0100U,
-        RightAlt = 0x0200U,
-        LeftSuper = 0x0400U,
-        RightSuper = 0x0800U,
-        NumLock = 0x1000U,
-        CapsLock = 0x2000U,
-        Mode = 0x4000U,
-        ScrollLock = 0x8000U,
-        Ctrl = LeftCtrl | RightCtrl,
-        Shift = LeftShift | RightShift,
-        Alt = LeftAlt | RightAlt,
-        Super = LeftSuper | RightSuper,
+            LeftShift = 0x0001U,
+            RightShift = 0x0002U,
+            Level5 = 0x0004U,
+            LeftCtrl = 0x0040U,
+            RightCtrl = 0x0080U,
+            LeftAlt = 0x0100U,
+            RightAlt = 0x0200U,
+            LeftSuper = 0x0400U,
+            RightSuper = 0x0800U,
+            NumLock = 0x1000U,
+            CapsLock = 0x2000U,
+            Mode = 0x4000U,
+            ScrollLock = 0x8000U,
+            Ctrl = LeftCtrl | RightCtrl,
+            Shift = LeftShift | RightShift,
+            Alt = LeftAlt | RightAlt,
+            Super = LeftSuper | RightSuper,
+        };
+
+        explicit Modifiers(Keys keys) noexcept;
+
+        [[nodiscard]] auto has_all(Keys keys) const noexcept -> bool;
+        [[nodiscard]] auto has_any(Keys keys) const noexcept -> bool;
+
+    private:
+        Keys m_keys = None;
     };
 
-    [[nodiscard]] constexpr auto operator|(const Modifiers lhs, const Modifiers rhs) noexcept -> Modifiers {
-        return static_cast<Modifiers>(std::to_underlying(lhs) | std::to_underlying(rhs));
-    }
-
-    [[nodiscard]] constexpr auto operator&(const Modifiers lhs, const Modifiers rhs) noexcept -> Modifiers {
-        return static_cast<Modifiers>(std::to_underlying(lhs) & std::to_underlying(rhs));
+    [[nodiscard]] constexpr auto operator|(
+        const Modifiers::Keys lhs,
+        const Modifiers::Keys rhs
+    ) noexcept -> Modifiers::Keys {
+        return static_cast<Modifiers::Keys>(std::to_underlying(lhs) | std::to_underlying(rhs));
     }
 
     enum class Actions : bool {
