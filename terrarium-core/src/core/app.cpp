@@ -30,8 +30,6 @@ namespace terra::core {
         run_schedule<StartupTag>();
 
         while(true) {
-            run_schedule<FrameBeginTag>();
-
             m_event_bus->flush();
 
             if(!m_running.load(std::memory_order::acquire)) {
@@ -39,11 +37,17 @@ namespace terra::core {
             }
 
             m_world.flush();
+
+            run_schedule<FrameBeginTag>();
+
+            m_event_bus->flush();
             run_schedule<UpdateTag>();
 
+            m_event_bus->flush();
             run_schedule<FrameEndTag>();
         }
 
+        m_event_bus->flush();
         run_schedule<ShutdownTag>();
     }
 

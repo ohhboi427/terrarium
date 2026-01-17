@@ -1,9 +1,6 @@
 #include <terrarium/core/event.hpp>
 
 namespace terra::core {
-    EventBus::EventBus() noexcept
-        : m_main_thread_id{ std::this_thread::get_id() } {}
-
     auto EventBus::flush() -> void {
         std::queue<DeferredDispatch> deferred_dispatches{};
 

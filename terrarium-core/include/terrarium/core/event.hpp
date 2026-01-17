@@ -37,7 +37,7 @@ namespace terra::core {
         using DeferredDispatch = std::move_only_function<void()>;
 
     public:
-        EventBus() noexcept;
+        EventBus() noexcept = default;
         EventBus(EventBus&&) noexcept = delete;
         EventBus(const EventBus&) = delete;
 
@@ -54,13 +54,6 @@ namespace terra::core {
         }
 
         auto dispatch(Event auto&& event) -> void {
-            thread_local const auto thread_id = std::this_thread::get_id();
-            if(thread_id == m_main_thread_id) {
-                dispatch_immediate(event);
-
-                return;
-            }
-
             auto deferred_dispatches = m_deferred_dispatches.lock();
             deferred_dispatches->emplace(
                 [this, event = std::forward<decltype(event)>(event)]() mutable -> void {
@@ -73,8 +66,6 @@ namespace terra::core {
 
     private:
         std::unordered_map<std::type_index, UniqueAny> m_listeners{};
-
-        std::thread::id m_main_thread_id;
         Mutex<std::queue<DeferredDispatch>> m_deferred_dispatches{};
 
         auto dispatch_immediate(const Event auto& event) -> void {
