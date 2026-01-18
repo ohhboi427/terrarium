@@ -1,13 +1,14 @@
 #include <terrarium/core/app.hpp>
 
-#include <terrarium/core/task.hpp>
-
+#include <core/time.hpp>
 #include <core/debug/assert.hpp>
 
 namespace terra::core {
     App::App() {
         m_event_bus = std::make_unique<EventBus>();
         m_task_pool = std::make_unique<TaskPool>(8U);
+
+        add_plugin(clock_plugin);
     }
 
     auto App::run() -> void {
